@@ -3,13 +3,14 @@ package decoder
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"sync/atomic"
 	"unicode"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 var (

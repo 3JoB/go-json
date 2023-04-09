@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	gojson "github.com/3JoB/go-json"
 	gojay "github.com/francoispqt/gojay"
-	gojson "github.com/goccy/go-json"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pquerna/ffjson/ffjson"
 	segmentiojson "github.com/segmentio/encoding/json"

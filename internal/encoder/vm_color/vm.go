@@ -3,12 +3,12 @@ package vm_color
 
 import (
 	"math"
-	"reflect"
+"github.com/3JoB/go-reflect"
 	"sort"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/encoder"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-json/internal/encoder"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 func Run(ctx *encoder.RuntimeContext, b []byte, codeSet *encoder.OpcodeSet) ([]byte, error) {

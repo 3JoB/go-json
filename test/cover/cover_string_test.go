@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestCoverString(t *testing.T) {
@@ -37,7 +37,7 @@ func TestCoverString(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "PtrHeadStringComplicated",
@@ -697,7 +697,7 @@ func TestCoverString(t *testing.T) {
 				}
 			}{A: struct {
 				A *string `json:"a"`
-			}{stringptr("foo")}},
+			}{A: stringptr("foo")}},
 		},
 		{
 			name: "HeadStringPtrNotRootOmitEmpty",
@@ -707,7 +707,7 @@ func TestCoverString(t *testing.T) {
 				}
 			}{A: struct {
 				A *string `json:"a,omitempty"`
-			}{stringptr("foo")}},
+			}{A: stringptr("foo")}},
 		},
 		{
 			name: "HeadStringPtrNotRootString",
@@ -717,7 +717,7 @@ func TestCoverString(t *testing.T) {
 				}
 			}{A: struct {
 				A *string `json:"a,string"`
-			}{stringptr("foo")}},
+			}{A: stringptr("foo")}},
 		},
 		{
 			name: "HeadStringPtrNotRootStringOmitEmpty",
@@ -727,7 +727,7 @@ func TestCoverString(t *testing.T) {
 				}
 			}{A: struct {
 				A *string `json:"a,string,omitempty"`
-			}{stringptr("foo")}},
+			}{A: stringptr("foo")}},
 		},
 
 		// HeadStringPtrNilNotRoot

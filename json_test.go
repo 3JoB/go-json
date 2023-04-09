@@ -5,23 +5,24 @@ import (
 	stdjson "encoding/json"
 	"math"
 	"math/rand"
-	"reflect"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json"
 )
 
 var validTests = []struct {
 	data string
 	ok   bool
 }{
-	{`foo`, false},
-	{`}{`, false},
-	{`{]`, false},
-	{`{}`, true},
-	{`{"foo":"bar"}`, true},
-	{`{"foo":"bar","bar":{"baz":["qux"]}}`, true},
-	{`[""],`, false},
+	{data: `foo`, ok: false},
+	{data: `}{`, ok: false},
+	{data: `{]`, ok: false},
+	{data: `{}`, ok: true},
+	{data: `{"foo":"bar"}`, ok: true},
+	{data: `{"foo":"bar","bar":{"baz":["qux"]}}`, ok: true},
+	{data: `[""],`, ok: false},
 }
 
 func TestValid(t *testing.T) {
@@ -47,15 +48,15 @@ type example struct {
 }
 
 var examples = []example{
-	{`1`, `1`},
-	{`{}`, `{}`},
-	{`[]`, `[]`},
-	{`{"":2}`, "{\n\t\"\": 2\n}"},
-	{`[3]`, "[\n\t3\n]"},
-	{`[1,2,3]`, "[\n\t1,\n\t2,\n\t3\n]"},
-	{`{"x":1}`, "{\n\t\"x\": 1\n}"},
-	{ex1, ex1i},
-	{"{\"\":\"<>&\u2028\u2029\"}", "{\n\t\"\": \"<>&\u2028\u2029\"\n}"}, // See golang.org/issue/34070
+	{compact: `1`, indent: `1`},
+	{compact: `{}`, indent: `{}`},
+	{compact: `[]`, indent: `[]`},
+	{compact: `{"":2}`, indent: "{\n\t\"\": 2\n}"},
+	{compact: `[3]`, indent: "[\n\t3\n]"},
+	{compact: `[1,2,3]`, indent: "[\n\t1,\n\t2,\n\t3\n]"},
+	{compact: `{"x":1}`, indent: "{\n\t\"x\": 1\n}"},
+	{compact: ex1, indent: ex1i},
+	{compact: "{\"\":\"<>&\u2028\u2029\"}", indent: "{\n\t\"\": \"<>&\u2028\u2029\"\n}"}, // See golang.org/issue/34070
 }
 
 var ex1 = `[true,false,null,"x",1,1.5,0,-5e+2]`
@@ -129,8 +130,8 @@ func TestCompactSeparators(t *testing.T) {
 	tests := []struct {
 		in, compact string
 	}{
-		{"{\"\u2028\": 1}", "{\"\u2028\":1}"},
-		{"{\"\u2029\" :2}", "{\"\u2029\":2}"},
+		{in: "{\"\u2028\": 1}", compact: "{\"\u2028\":1}"},
+		{in: "{\"\u2029\" :2}", compact: "{\"\u2029\":2}"},
 	}
 	for _, tt := range tests {
 		var buf bytes.Buffer
@@ -209,7 +210,7 @@ func TestCompactBig(t *testing.T) {
 }
 
 func TestIndentBig(t *testing.T) {
-	//t.Parallel()
+	// t.Parallel()
 	initBig()
 	var buf bytes.Buffer
 	if err := json.Indent(&buf, jsonBig, "", "\t"); err != nil {
@@ -253,8 +254,8 @@ type indentErrorTest struct {
 }
 
 var indentErrorTests = []indentErrorTest{
-	{`{"X": "foo", "Y"}`, json.NewSyntaxError("invalid character '}' after object key", 17)},
-	{`{"X": "foo" "Y": "bar"}`, json.NewSyntaxError("invalid character '\"' after object key:value pair", 13)},
+	{in: `{"X": "foo", "Y"}`, err: json.NewSyntaxError("invalid character '}' after object key", 17)},
+	{in: `{"X": "foo" "Y": "bar"}`, err: json.NewSyntaxError("invalid character '\"' after object key:value pair", 13)},
 }
 
 func TestIndentErrors(t *testing.T) {
@@ -310,7 +311,7 @@ func initBig() {
 	jsonBig = b
 }
 
-func genValue(n int) interface{} {
+func genValue(n int) any {
 	if n > 1 {
 		switch rand.Intn(2) {
 		case 0:
@@ -343,7 +344,7 @@ func genString(stddev float64) string {
 	return string(c)
 }
 
-func genArray(n int) []interface{} {
+func genArray(n int) []any {
 	f := int(math.Abs(rand.NormFloat64()) * math.Min(10, float64(n/2)))
 	if f > n {
 		f = n
@@ -351,14 +352,14 @@ func genArray(n int) []interface{} {
 	if f < 1 {
 		f = 1
 	}
-	x := make([]interface{}, f)
+	x := make([]any, f)
 	for i := range x {
 		x[i] = genValue(((i+1)*n)/f - (i*n)/f)
 	}
 	return x
 }
 
-func genMap(n int) map[string]interface{} {
+func genMap(n int) map[string]any {
 	f := int(math.Abs(rand.NormFloat64()) * math.Min(10, float64(n/2)))
 	if f > n {
 		f = n
@@ -366,7 +367,7 @@ func genMap(n int) map[string]interface{} {
 	if n > 0 && f == 0 {
 		f = 1
 	}
-	x := make(map[string]interface{})
+	x := make(map[string]any)
 	for i := 0; i < f; i++ {
 		x[genString(10)] = genValue(((i+1)*n)/f - (i*n)/f)
 	}

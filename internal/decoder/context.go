@@ -4,7 +4,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/errors"
 )
 
 type RuntimeContext struct {
@@ -14,7 +14,7 @@ type RuntimeContext struct {
 
 var (
 	runtimeContextPool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return &RuntimeContext{
 				Option: &Option{},
 			}

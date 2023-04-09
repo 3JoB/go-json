@@ -3,11 +3,12 @@ package json
 import (
 	"io"
 
-	"github.com/goccy/go-json/internal/decoder"
-	"github.com/goccy/go-json/internal/encoder"
+	"github.com/3JoB/go-json/internal/decoder"
+	"github.com/3JoB/go-json/internal/encoder"
 )
 
 type EncodeOption = encoder.Option
+
 type EncodeOptionFunc func(*EncodeOption)
 
 // UnorderedMap doesn't sort when encoding map type.
@@ -64,6 +65,7 @@ func Colorize(scheme *ColorScheme) EncodeOptionFunc {
 }
 
 type DecodeOption = decoder.Option
+
 type DecodeOptionFunc func(*DecodeOption)
 
 // DecodeFieldPriorityFirstWin

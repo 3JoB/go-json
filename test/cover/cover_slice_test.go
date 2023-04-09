@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 type coverSliceMarshalJSON struct {
@@ -70,7 +70,7 @@ func TestCoverSlice(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "SliceInt",
@@ -134,19 +134,19 @@ func TestCoverSlice(t *testing.T) {
 		},
 		{
 			name: "SliceSlice",
-			data: [][]int{[]int{1, 2, 3}, nil, []int{4, 5, 6}},
+			data: [][]int{{1, 2, 3}, nil, {4, 5, 6}},
 		},
 		{
 			name: "SliceArray",
-			data: [][3]int{[3]int{1, 2, 3}, [3]int{4, 5, 6}},
+			data: [][3]int{{1, 2, 3}, {4, 5, 6}},
 		},
 		{
 			name: "SliceMap",
-			data: []map[string]int{map[string]int{"a": 1}, nil, map[string]int{"b": 2}},
+			data: []map[string]int{{"a": 1}, nil, {"b": 2}},
 		},
 		{
 			name: "SliceStruct",
-			data: []struct{ A int }{struct{ A int }{A: 1}, struct{ A int }{A: 2}},
+			data: []struct{ A int }{{A: 1}, {A: 2}},
 		},
 		{
 			name: "SliceMarshalJSON",
@@ -230,7 +230,7 @@ func TestCoverSlice(t *testing.T) {
 		},
 		{
 			name: "SliceStructPtr",
-			data: []*struct{ A int }{&struct{ A int }{A: 1}, &struct{ A int }{A: 2}},
+			data: []*struct{ A int }{{A: 1}, {A: 2}},
 		},
 		{
 			name: "RecursiveSlice",
@@ -749,7 +749,7 @@ func TestCoverSlice(t *testing.T) {
 				}
 			}{A: struct {
 				A *[]int `json:"a"`
-			}{sliceptr([]int{-1})}},
+			}{A: sliceptr([]int{-1})}},
 		},
 		{
 			name: "HeadSlicePtrNotRootOmitEmpty",
@@ -759,7 +759,7 @@ func TestCoverSlice(t *testing.T) {
 				}
 			}{A: struct {
 				A *[]int `json:"a,omitempty"`
-			}{sliceptr([]int{-1})}},
+			}{A: sliceptr([]int{-1})}},
 		},
 		{
 			name: "HeadSlicePtrNotRootString",
@@ -769,7 +769,7 @@ func TestCoverSlice(t *testing.T) {
 				}
 			}{A: struct {
 				A *[]int `json:"a,string"`
-			}{sliceptr([]int{-1})}},
+			}{A: sliceptr([]int{-1})}},
 		},
 
 		// HeadSlicePtrNilNotRoot

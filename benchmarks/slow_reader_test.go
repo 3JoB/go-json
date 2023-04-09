@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"testing"
 
-	gojson "github.com/goccy/go-json"
+	gojson "github.com/3JoB/go-json"
+	"github.com/3JoB/go-reflect"
 )
 
 // Benchmark decoding from a slow io.Reader that never fills the buffer completely

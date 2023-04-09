@@ -44,5 +44,6 @@ type EncodeFormatScheme struct {
 
 type (
 	ColorScheme = EncodeFormatScheme
+
 	ColorFormat = EncodeFormat
 )

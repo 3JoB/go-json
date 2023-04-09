@@ -4,8 +4,8 @@ import "unicode/utf8"
 
 const (
 	// The default lowest and highest continuation byte.
-	locb = 128 //0b10000000
-	hicb = 191 //0b10111111
+	locb = 128 // 0b10000000
+	hicb = 191 // 0b10111111
 
 	// These names of these constants are chosen to give nice alignment in the
 	// table below. The first nibble is an index into acceptRanges or F for
@@ -45,8 +45,8 @@ var first = [256]uint8{
 }
 
 const (
-	lineSep      = byte(168) //'\u2028'
-	paragraphSep = byte(169) //'\u2029'
+	lineSep      = byte(168) // '\u2028'
+	paragraphSep = byte(169) // '\u2029'
 )
 
 type decodeRuneState int
@@ -87,7 +87,7 @@ func decodeRuneInString(s string) (decodeRuneState, int) {
 			return runeErrorState, 1
 		}
 	case 2:
-		if s1 < locb || 0x9F < s1 {
+		if s1 < locb || s1 > 0x9F {
 			return runeErrorState, 1
 		}
 	case 3:
@@ -95,7 +95,7 @@ func decodeRuneInString(s string) (decodeRuneState, int) {
 			return runeErrorState, 1
 		}
 	case 4:
-		if s1 < locb || 0x8F < s1 {
+		if s1 < locb || s1 > 0x8F {
 			return runeErrorState, 1
 		}
 	}

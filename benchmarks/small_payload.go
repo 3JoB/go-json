@@ -29,7 +29,7 @@ type SmallPayloadFFJson struct {
 	V    int
 }
 
-//easyjson:json
+// easyjson:json
 type SmallPayloadEasyJson struct {
 	St   int
 	Sid  int

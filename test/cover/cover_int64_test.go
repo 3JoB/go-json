@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestCoverInt64(t *testing.T) {
@@ -31,7 +31,7 @@ func TestCoverInt64(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "Int64",
@@ -520,7 +520,7 @@ func TestCoverInt64(t *testing.T) {
 				}
 			}{A: struct {
 				A *int64 `json:"a"`
-			}{int64ptr(-1)}},
+			}{A: int64ptr(-1)}},
 		},
 		{
 			name: "HeadInt64PtrNotRootOmitEmpty",
@@ -530,7 +530,7 @@ func TestCoverInt64(t *testing.T) {
 				}
 			}{A: struct {
 				A *int64 `json:"a,omitempty"`
-			}{int64ptr(-1)}},
+			}{A: int64ptr(-1)}},
 		},
 		{
 			name: "HeadInt64PtrNotRootString",
@@ -540,7 +540,7 @@ func TestCoverInt64(t *testing.T) {
 				}
 			}{A: struct {
 				A *int64 `json:"a,string"`
-			}{int64ptr(-1)}},
+			}{A: int64ptr(-1)}},
 		},
 
 		// HeadInt64PtrNilNotRoot

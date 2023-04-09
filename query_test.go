@@ -2,10 +2,11 @@ package json_test
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json"
 )
 
 type queryTestX struct {

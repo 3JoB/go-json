@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestCoverNumber(t *testing.T) {
@@ -37,7 +37,7 @@ func TestCoverNumber(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "Number",
@@ -665,7 +665,7 @@ func TestCoverNumber(t *testing.T) {
 				}
 			}{A: struct {
 				A *json.Number `json:"a"`
-			}{numberptr("1")}},
+			}{A: numberptr("1")}},
 		},
 		{
 			name: "HeadNumberPtrNotRootOmitEmpty",
@@ -675,7 +675,7 @@ func TestCoverNumber(t *testing.T) {
 				}
 			}{A: struct {
 				A *json.Number `json:"a,omitempty"`
-			}{numberptr("1")}},
+			}{A: numberptr("1")}},
 		},
 		{
 			name: "HeadNumberPtrNotRootString",
@@ -685,7 +685,7 @@ func TestCoverNumber(t *testing.T) {
 				}
 			}{A: struct {
 				A *json.Number `json:"a,string"`
-			}{numberptr("1")}},
+			}{A: numberptr("1")}},
 		},
 		{
 			name: "HeadNumberPtrNotRootStringOmitEmpty",
@@ -695,7 +695,7 @@ func TestCoverNumber(t *testing.T) {
 				}
 			}{A: struct {
 				A *json.Number `json:"a,string,omitempty"`
-			}{numberptr("1")}},
+			}{A: numberptr("1")}},
 		},
 
 		// HeadNumberPtrNilNotRoot

@@ -2,11 +2,12 @@ package decoder
 
 import (
 	"fmt"
-	"reflect"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type intDecoder struct {
@@ -53,7 +54,7 @@ func (d *intDecoder) parseInt(b []byte) (int64, error) {
 	}
 	maxDigit := len(b)
 	if maxDigit > pow10i64Len {
-		return 0, fmt.Errorf("invalid length of number")
+		return 0, errors.New("invalid length of number")
 	}
 	sum := int64(0)
 	for i := 0; i < maxDigit; i++ {
@@ -242,5 +243,5 @@ func (d *intDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.P
 }
 
 func (d *intDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: int decoder does not support decode path")
+	return nil, 0, errors.New("json: int decoder does not support decode path")
 }

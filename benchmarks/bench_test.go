@@ -13,6 +13,7 @@ package benchmark
 import (
 	"bytes"
 	"compress/gzip"
+	stdjson "encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -20,9 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	stdjson "encoding/json"
-
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 	jsoniter "github.com/json-iterator/go"
 	segmentiojson "github.com/segmentio/encoding/json"
 	"github.com/wI2L/jettison"

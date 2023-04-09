@@ -1,9 +1,11 @@
 package decoder
 
 import (
+	"errors"
 	"fmt"
-	"reflect"
 	"strconv"
+
+	"github.com/3JoB/go-reflect"
 )
 
 var (
@@ -129,18 +131,18 @@ func castInt(v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castInt(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to int64 from empty array")
+		return nilValue, errors.New("failed to cast to int64 from empty array")
 	case reflect.Slice:
 		if v.Len() > 0 {
 			return castInt(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to int64 from empty slice")
+		return nilValue, errors.New("failed to cast to int64 from empty slice")
 	case reflect.Interface:
 		return castInt(reflect.ValueOf(v.Interface()))
 	case reflect.Map:
-		return nilValue, fmt.Errorf("failed to cast to int64 from map")
+		return nilValue, errors.New("failed to cast to int64 from map")
 	case reflect.Struct:
-		return nilValue, fmt.Errorf("failed to cast to int64 from struct")
+		return nilValue, errors.New("failed to cast to int64 from struct")
 	case reflect.Ptr:
 		return castInt(v.Elem())
 	}
@@ -170,18 +172,18 @@ func castUint(v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castUint(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to uint64 from empty array")
+		return nilValue, errors.New("failed to cast to uint64 from empty array")
 	case reflect.Slice:
 		if v.Len() > 0 {
 			return castUint(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to uint64 from empty slice")
+		return nilValue, errors.New("failed to cast to uint64 from empty slice")
 	case reflect.Interface:
 		return castUint(reflect.ValueOf(v.Interface()))
 	case reflect.Map:
-		return nilValue, fmt.Errorf("failed to cast to uint64 from map")
+		return nilValue, errors.New("failed to cast to uint64 from map")
 	case reflect.Struct:
-		return nilValue, fmt.Errorf("failed to cast to uint64 from struct")
+		return nilValue, errors.New("failed to cast to uint64 from struct")
 	case reflect.Ptr:
 		return castUint(v.Elem())
 	}
@@ -207,18 +209,18 @@ func castString(v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castString(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to string from empty array")
+		return nilValue, errors.New("failed to cast to string from empty array")
 	case reflect.Slice:
 		if v.Len() > 0 {
 			return castString(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to string from empty slice")
+		return nilValue, errors.New("failed to cast to string from empty slice")
 	case reflect.Interface:
 		return castString(reflect.ValueOf(v.Interface()))
 	case reflect.Map:
-		return nilValue, fmt.Errorf("failed to cast to string from map")
+		return nilValue, errors.New("failed to cast to string from map")
 	case reflect.Struct:
-		return nilValue, fmt.Errorf("failed to cast to string from struct")
+		return nilValue, errors.New("failed to cast to string from struct")
 	case reflect.Ptr:
 		return castString(v.Elem())
 	}
@@ -263,18 +265,18 @@ func castBool(v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castBool(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to string from empty array")
+		return nilValue, errors.New("failed to cast to string from empty array")
 	case reflect.Slice:
 		if v.Len() > 0 {
 			return castBool(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to string from empty slice")
+		return nilValue, errors.New("failed to cast to string from empty slice")
 	case reflect.Interface:
 		return castBool(reflect.ValueOf(v.Interface()))
 	case reflect.Map:
-		return nilValue, fmt.Errorf("failed to cast to string from map")
+		return nilValue, errors.New("failed to cast to string from map")
 	case reflect.Struct:
-		return nilValue, fmt.Errorf("failed to cast to string from struct")
+		return nilValue, errors.New("failed to cast to string from struct")
 	case reflect.Ptr:
 		return castBool(v.Elem())
 	}
@@ -304,18 +306,18 @@ func castFloat(v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castFloat(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to float64 from empty array")
+		return nilValue, errors.New("failed to cast to float64 from empty array")
 	case reflect.Slice:
 		if v.Len() > 0 {
 			return castFloat(v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to float64 from empty slice")
+		return nilValue, errors.New("failed to cast to float64 from empty slice")
 	case reflect.Interface:
 		return castFloat(reflect.ValueOf(v.Interface()))
 	case reflect.Map:
-		return nilValue, fmt.Errorf("failed to cast to float64 from map")
+		return nilValue, errors.New("failed to cast to float64 from map")
 	case reflect.Struct:
-		return nilValue, fmt.Errorf("failed to cast to float64 from struct")
+		return nilValue, errors.New("failed to cast to float64 from struct")
 	case reflect.Ptr:
 		return castFloat(v.Elem())
 	}
@@ -375,11 +377,11 @@ func castMap(t reflect.Type, v reflect.Value) (reflect.Value, error) {
 	case reflect.Map:
 		iter := v.MapRange()
 		for iter.Next() {
-			key, err := castValue(t.Key(), iter.Key())
+			key, err := castValue(t.Key(), reflect.ToV(iter.Key()))
 			if err != nil {
 				return nilValue, err
 			}
-			value, err := castValue(t.Elem(), iter.Value())
+			value, err := castValue(t.Elem(), reflect.ToV(iter.Value()))
 			if err != nil {
 				return nilValue, err
 			}
@@ -392,7 +394,7 @@ func castMap(t reflect.Type, v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castMap(t, v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to map from empty slice")
+		return nilValue, errors.New("failed to cast to map from empty slice")
 	}
 	return nilValue, fmt.Errorf("failed to cast to map from %s", v.Type().Kind())
 }
@@ -403,7 +405,7 @@ func castStruct(t reflect.Type, v reflect.Value) (reflect.Value, error) {
 	case reflect.Map:
 		iter := v.MapRange()
 		for iter.Next() {
-			key := iter.Key()
+			key := reflect.ToV(iter.Key())
 			k, err := castString(key)
 			if err != nil {
 				return nilValue, err
@@ -411,7 +413,7 @@ func castStruct(t reflect.Type, v reflect.Value) (reflect.Value, error) {
 			fieldName := k.String()
 			field, ok := t.FieldByName(fieldName)
 			if ok {
-				value, err := castValue(field.Type, iter.Value())
+				value, err := castValue(field.Type, reflect.ToV(iter.Value()))
 				if err != nil {
 					return nilValue, err
 				}
@@ -431,7 +433,7 @@ func castStruct(t reflect.Type, v reflect.Value) (reflect.Value, error) {
 		if v.Len() > 0 {
 			return castStruct(t, v.Index(0))
 		}
-		return nilValue, fmt.Errorf("failed to cast to struct from empty slice")
+		return nilValue, errors.New("failed to cast to struct from empty slice")
 	default:
 		return nilValue, fmt.Errorf("failed to cast to struct from %s", v.Type().Kind())
 	}

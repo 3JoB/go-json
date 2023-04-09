@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding"
 	"encoding/json"
-	"reflect"
 	"unsafe"
+
+	"github.com/3JoB/go-reflect"
 )
 
 type Decoder interface {

@@ -9,29 +9,29 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json"
 )
 
 // Test values for the stream test.
 // One of each JSON kind.
-var streamTest = []interface{}{
+var streamTest = []any{
 	0.1,
 	"hello",
 	nil,
 	true,
 	false,
-	[]interface{}{"a", "b", "c"},
-	map[string]interface{}{"K": "Kelvin", "ß": "long s"},
+	[]any{"a", "b", "c"},
+	map[string]any{"K": "Kelvin", "ß": "long s"},
 	3.14, // another value to make sure something can follow map
 }
 
@@ -121,36 +121,36 @@ func TestEncoderSetEscapeHTML(t *testing.T) {
 	marshalerStruct := &struct {
 		NonPtr strMarshaler
 		Ptr    strPtrMarshaler
-	}{`"<str>"`, `"<str>"`}
+	}{NonPtr: `"<str>"`, Ptr: `"<str>"`}
 
 	// https://golang.org/issue/34154
 	stringOption := struct {
 		Bar string `json:"bar,string"`
-	}{`<html>foobar</html>`}
+	}{Bar: `<html>foobar</html>`}
 
 	for _, tt := range []struct {
 		name       string
-		v          interface{}
+		v          any
 		wantEscape string
 		want       string
 	}{
-		{"c", c, `"\u003c\u0026\u003e"`, `"<&>"`},
-		{"ct", ct, `"\"\u003c\u0026\u003e\""`, `"\"<&>\""`},
-		{`"<&>"`, "<&>", `"\u003c\u0026\u003e"`, `"<&>"`},
+		{name: "c", v: c, wantEscape: `"\u003c\u0026\u003e"`, want: `"<&>"`},
+		{name: "ct", v: ct, wantEscape: `"\"\u003c\u0026\u003e\""`, want: `"\"<&>\""`},
+		{name: `"<&>"`, v: "<&>", wantEscape: `"\u003c\u0026\u003e"`, want: `"<&>"`},
 		{
-			"tagStruct", tagStruct,
-			`{"\u003c\u003e\u0026#! ":0,"Invalid":0}`,
-			`{"<>&#! ":0,"Invalid":0}`,
+			name: "tagStruct", v: tagStruct,
+			wantEscape: `{"\u003c\u003e\u0026#! ":0,"Invalid":0}`,
+			want:       `{"<>&#! ":0,"Invalid":0}`,
 		},
 		{
-			`"<str>"`, marshalerStruct,
-			`{"NonPtr":"\u003cstr\u003e","Ptr":"\u003cstr\u003e"}`,
-			`{"NonPtr":"<str>","Ptr":"<str>"}`,
+			name: `"<str>"`, v: marshalerStruct,
+			wantEscape: `{"NonPtr":"\u003cstr\u003e","Ptr":"\u003cstr\u003e"}`,
+			want:       `{"NonPtr":"<str>","Ptr":"<str>"}`,
 		},
 		{
-			"stringOption", stringOption,
-			`{"bar":"\"\\u003chtml\\u003efoobar\\u003c/html\\u003e\""}`,
-			`{"bar":"\"<html>foobar</html>\""}`,
+			name: "stringOption", v: stringOption,
+			wantEscape: `{"bar":"\"\\u003chtml\\u003efoobar\\u003c/html\\u003e\""}`,
+			want:       `{"bar":"\"<html>foobar</html>\""}`,
 		},
 	} {
 		var buf bytes.Buffer
@@ -202,7 +202,7 @@ func TestDecoder(t *testing.T) {
 				buf.WriteRune(c)
 			}
 		}
-		out := make([]interface{}, i)
+		out := make([]any, i)
 		dec := json.NewDecoder(&buf)
 		for j := range out {
 			if err := dec.Decode(&out[j]); err != nil {
@@ -234,7 +234,7 @@ func TestDecoderBuffered(t *testing.T) {
 	if m.Name != "Gopher" {
 		t.Errorf("Name = %q; want Gopher", m.Name)
 	}
-	rest, err := ioutil.ReadAll(d.Buffered())
+	rest, err := io.ReadAll(d.Buffered())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,7 +303,7 @@ func TestBlocking(t *testing.T) {
 	for _, enc := range blockingTests {
 		r, w := net.Pipe()
 		go w.Write([]byte(enc))
-		var val interface{}
+		var val any
 
 		// If Decode reads beyond what w.Write writes above,
 		// it will block, and the test will deadlock.
@@ -317,64 +317,65 @@ func TestBlocking(t *testing.T) {
 
 type tokenStreamCase struct {
 	json      string
-	expTokens []interface{}
+	expTokens []any
 }
 
 type decodeThis struct {
-	v interface{}
+	v any
 }
 
 var tokenStreamCases = []tokenStreamCase{
 	// streaming token cases
-	{json: `10`, expTokens: []interface{}{float64(10)}},
-	{json: ` [10] `, expTokens: []interface{}{
+	{json: `10`, expTokens: []any{float64(10)}},
+	{json: ` [10] `, expTokens: []any{
 		json.Delim('['), float64(10), json.Delim(']')}},
-	{json: ` [false,10,"b"] `, expTokens: []interface{}{
+	{json: ` [false,10,"b"] `, expTokens: []any{
 		json.Delim('['), false, float64(10), "b", json.Delim(']')}},
-	{json: `{ "a": 1 }`, expTokens: []interface{}{
+	{json: `{ "a": 1 }`, expTokens: []any{
 		json.Delim('{'), "a", float64(1), json.Delim('}')}},
-	{json: `{"a": 1, "b":"3"}`, expTokens: []interface{}{
+	{json: `{"a": 1, "b":"3"}`, expTokens: []any{
 		json.Delim('{'), "a", float64(1), "b", "3", json.Delim('}')}},
-	{json: ` [{"a": 1},{"a": 2}] `, expTokens: []interface{}{
+	{json: ` [{"a": 1},{"a": 2}] `, expTokens: []any{
 		json.Delim('['),
 		json.Delim('{'), "a", float64(1), json.Delim('}'),
 		json.Delim('{'), "a", float64(2), json.Delim('}'),
 		json.Delim(']')}},
-	{json: `{"obj": {"a": 1}}`, expTokens: []interface{}{
+	{json: `{"obj": {"a": 1}}`, expTokens: []any{
 		json.Delim('{'), "obj", json.Delim('{'), "a", float64(1), json.Delim('}'),
-		json.Delim('}')}},
-	{json: `{"obj": [{"a": 1}]}`, expTokens: []interface{}{
+		json.Delim('}'),
+	}},
+	{json: `{"obj": [{"a": 1}]}`, expTokens: []any{
 		json.Delim('{'), "obj", json.Delim('['),
 		json.Delim('{'), "a", float64(1), json.Delim('}'),
 		json.Delim(']'), json.Delim('}')}},
 
 	// streaming tokens with intermittent Decode()
-	{json: `{ "a": 1 }`, expTokens: []interface{}{
+	{json: `{ "a": 1 }`, expTokens: []any{
 		json.Delim('{'), "a",
-		decodeThis{float64(1)},
+		decodeThis{v: float64(1)},
 		json.Delim('}')}},
-	{json: ` [ { "a" : 1 } ] `, expTokens: []interface{}{
+	{json: ` [ { "a" : 1 } ] `, expTokens: []any{
 		json.Delim('['),
-		decodeThis{map[string]interface{}{"a": float64(1)}},
+		decodeThis{v: map[string]any{"a": float64(1)}},
 		json.Delim(']')}},
-	{json: ` [{"a": 1},{"a": 2}] `, expTokens: []interface{}{
+	{json: ` [{"a": 1},{"a": 2}] `, expTokens: []any{
 		json.Delim('['),
-		decodeThis{map[string]interface{}{"a": float64(1)}},
-		decodeThis{map[string]interface{}{"a": float64(2)}},
+		decodeThis{v: map[string]any{"a": float64(1)}},
+		decodeThis{v: map[string]any{"a": float64(2)}},
 		json.Delim(']')}},
-	{json: `{ "obj" : [ { "a" : 1 } ] }`, expTokens: []interface{}{
+	{json: `{ "obj" : [ { "a" : 1 } ] }`, expTokens: []any{
 		json.Delim('{'), "obj", json.Delim('['),
-		decodeThis{map[string]interface{}{"a": float64(1)}},
+		decodeThis{v: map[string]any{"a": float64(1)}},
 		json.Delim(']'), json.Delim('}')}},
 
-	{json: `{"obj": {"a": 1}}`, expTokens: []interface{}{
+	{json: `{"obj": {"a": 1}}`, expTokens: []any{
 		json.Delim('{'), "obj",
-		decodeThis{map[string]interface{}{"a": float64(1)}},
+		decodeThis{v: map[string]any{"a": float64(1)}},
 		json.Delim('}')}},
-	{json: `{"obj": [{"a": 1}]}`, expTokens: []interface{}{
+	{json: `{"obj": [{"a": 1}]}`, expTokens: []any{
 		json.Delim('{'), "obj",
-		decodeThis{[]interface{}{
-			map[string]interface{}{"a": float64(1)},
+		decodeThis{v: []any{
+			map[string]any{"a": float64(1)},
 		}},
 		json.Delim('}')}},
 	/*
@@ -399,11 +400,9 @@ var tokenStreamCases = []tokenStreamCase{
 
 func TestDecodeInStream(t *testing.T) {
 	for ci, tcase := range tokenStreamCases {
-
 		dec := json.NewDecoder(strings.NewReader(tcase.json))
 		for i, etk := range tcase.expTokens {
-
-			var tk interface{}
+			var tk any
 			var err error
 
 			if dt, ok := etk.(decodeThis); ok {

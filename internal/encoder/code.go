@@ -2,10 +2,11 @@ package encoder
 
 import (
 	"fmt"
-	"reflect"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type Code interface {

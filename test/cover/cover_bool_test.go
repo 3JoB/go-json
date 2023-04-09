@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 type customBool bool
@@ -64,7 +64,7 @@ func TestCoverBool(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "Bool",
@@ -692,7 +692,7 @@ func TestCoverBool(t *testing.T) {
 				}
 			}{A: struct {
 				A *bool `json:"a"`
-			}{boolptr(true)}},
+			}{A: boolptr(true)}},
 		},
 		{
 			name: "HeadBoolPtrNotRootOmitEmpty",
@@ -702,7 +702,7 @@ func TestCoverBool(t *testing.T) {
 				}
 			}{A: struct {
 				A *bool `json:"a,omitempty"`
-			}{boolptr(true)}},
+			}{A: boolptr(true)}},
 		},
 		{
 			name: "HeadBoolPtrNotRootString",
@@ -712,7 +712,7 @@ func TestCoverBool(t *testing.T) {
 				}
 			}{A: struct {
 				A *bool `json:"a,string"`
-			}{boolptr(true)}},
+			}{A: boolptr(true)}},
 		},
 		{
 			name: "HeadBoolPtrNotRootStringOmitEmpty",
@@ -722,7 +722,7 @@ func TestCoverBool(t *testing.T) {
 				}
 			}{A: struct {
 				A *bool `json:"a,string,omitempty"`
-			}{boolptr(true)}},
+			}{A: boolptr(true)}},
 		},
 
 		// HeadBoolPtrNilNotRoot

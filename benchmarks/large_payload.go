@@ -18,12 +18,15 @@ func (m *DSUser) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	}
 	return nil
 }
+
 func (m *DSUser) NKeys() int {
 	return 1
 }
+
 func (m *DSUser) IsNil() bool {
 	return m == nil
 }
+
 func (m *DSUser) MarshalJSONObject(enc *gojay.Encoder) {
 	enc.AddStringKey("username", m.Username)
 }
@@ -42,12 +45,15 @@ func (m *DSTopic) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	}
 	return nil
 }
+
 func (m *DSTopic) NKeys() int {
 	return 2
 }
+
 func (m *DSTopic) IsNil() bool {
 	return m == nil
 }
+
 func (m *DSTopic) MarshalJSONObject(enc *gojay.Encoder) {
 	enc.AddIntKey("id", m.Id)
 	enc.AddStringKey("slug", m.Slug)
@@ -66,6 +72,7 @@ func (m *DSTopics) MarshalJSONArray(enc *gojay.Encoder) {
 		enc.AddObject(e)
 	}
 }
+
 func (m *DSTopics) IsNil() bool {
 	return m == nil
 }
@@ -85,6 +92,7 @@ func (m *DSTopicsList) UnmarshalJSONObject(dec *gojay.Decoder, key string) error
 	}
 	return nil
 }
+
 func (m *DSTopicsList) NKeys() int {
 	return 2
 }
@@ -111,6 +119,7 @@ func (m *DSUsers) MarshalJSONArray(enc *gojay.Encoder) {
 		enc.AddObject(e)
 	}
 }
+
 func (m *DSUsers) IsNil() bool {
 	return m == nil
 }
@@ -120,7 +129,7 @@ type LargePayload struct {
 	Topics *DSTopicsList
 }
 
-//easyjson:json
+// easyjson:json
 type LargePayloadEasyJson struct {
 	Users  DSUsers
 	Topics *DSTopicsList

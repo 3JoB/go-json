@@ -108,6 +108,7 @@ func (m *CBAvatar) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	}
 	return nil
 }
+
 func (m *CBAvatar) NKeys() int {
 	return 1
 }
@@ -133,6 +134,7 @@ func (m *Avatars) MarshalJSONArray(enc *gojay.Encoder) {
 		enc.AddObject(e)
 	}
 }
+
 func (m *Avatars) IsNil() bool {
 	return m == nil
 }
@@ -148,6 +150,7 @@ func (m *CBGravatar) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
 	}
 	return nil
 }
+
 func (m *CBGravatar) NKeys() int {
 	return 1
 }
@@ -248,7 +251,7 @@ type MediumPayload struct {
 	Company string    `json:"company"`
 }
 
-//easyjson:json
+// easyjson:json
 type MediumPayloadEasyJson struct {
 	Person  *CBPerson `json:"person"`
 	Company string    `json:"company"`

@@ -10,7 +10,7 @@ import (
 	"unicode/utf16"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/errors"
 )
 
 type structFieldSet struct {
@@ -44,7 +44,7 @@ var (
 func init() {
 	for i := 0; i < 256; i++ {
 		c := i
-		if 'A' <= c && c <= 'Z' {
+		if c >= 'A' && c <= 'Z' {
 			c += 'a' - 'A'
 		}
 		largeToSmallTable[i] = byte(c)
@@ -841,5 +841,5 @@ func (d *structDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsaf
 }
 
 func (d *structDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: struct decoder does not support decode path")
+	return nil, 0, errors.New("json: struct decoder does not support decode path")
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestCoverInt16(t *testing.T) {
@@ -31,7 +31,7 @@ func TestCoverInt16(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "Int16",
@@ -543,7 +543,7 @@ func TestCoverInt16(t *testing.T) {
 				}
 			}{A: struct {
 				A *int16 `json:"a"`
-			}{int16ptr(1)}},
+			}{A: int16ptr(1)}},
 		},
 		{
 			name: "HeadInt16PtrNotRootOmitEmpty",
@@ -553,7 +553,7 @@ func TestCoverInt16(t *testing.T) {
 				}
 			}{A: struct {
 				A *int16 `json:"a,omitempty"`
-			}{int16ptr(1)}},
+			}{A: int16ptr(1)}},
 		},
 		{
 			name: "HeadInt16PtrNotRootString",
@@ -563,7 +563,7 @@ func TestCoverInt16(t *testing.T) {
 				}
 			}{A: struct {
 				A *int16 `json:"a,string"`
-			}{int16ptr(1)}},
+			}{A: int16ptr(1)}},
 		},
 
 		// HeadInt16PtrNilNotRoot

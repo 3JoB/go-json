@@ -2,11 +2,10 @@ package decoder
 
 import (
 	"bytes"
-	"fmt"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type funcDecoder struct {
@@ -16,7 +15,7 @@ type funcDecoder struct {
 }
 
 func newFuncDecoder(typ *runtime.Type, structName, fieldName string) *funcDecoder {
-	fnDecoder := &funcDecoder{typ, structName, fieldName}
+	fnDecoder := &funcDecoder{typ: typ, structName: structName, fieldName: fieldName}
 	return fnDecoder
 }
 
@@ -142,5 +141,5 @@ func (d *funcDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.
 }
 
 func (d *funcDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: func decoder does not support decode path")
+	return nil, 0, errors.New("json: func decoder does not support decode path")
 }

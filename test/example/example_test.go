@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func ExampleMarshal() {
@@ -100,9 +100,9 @@ func ExampleDecoder_Token() {
 		}
 		fmt.Printf("%T: %v", t, t)
 		if dec.More() {
-			fmt.Printf(" (more)")
+			fmt.Print(" (more)")
 		}
-		fmt.Printf("\n")
+		fmt.Print("\n")
 	}
 	// Output:
 	// json.Delim: { (more)
@@ -201,7 +201,7 @@ func ExampleRawMessage_unmarshal() {
 	}
 
 	for _, c := range colors {
-		var dst interface{}
+		var dst any
 		switch c.Space {
 		case "RGB":
 			dst = new(RGB)
@@ -249,8 +249,8 @@ func ExampleIndent() {
 		Number int
 	}
 	roads := []Road{
-		{"Diamond Fork", 29},
-		{"Sheep Creek", 51},
+		{Name: "Diamond Fork", Number: 29},
+		{Name: "Sheep Creek", Number: 51},
 	}
 
 	b, err := json.Marshal(roads)
@@ -309,5 +309,5 @@ func ExampleHTMLEscape() {
 	json.HTMLEscape(&out, []byte(`{"Name":"<b>HTML content</b>"}`))
 	out.WriteTo(os.Stdout)
 	// Output:
-	//{"Name":"\u003cb\u003eHTML content\u003c/b\u003e"}
+	// {"Name":"\u003cb\u003eHTML content\u003c/b\u003e"}
 }

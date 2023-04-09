@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/encoder"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-json/internal/encoder"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 const uintptrSize = 4 << (^uintptr(0) >> 63)
@@ -74,16 +74,25 @@ func ptrToUint64(p uintptr, bitSize uint8) uint64 {
 	}
 	return 0
 }
-func ptrToFloat32(p uintptr) float32            { return **(**float32)(unsafe.Pointer(&p)) }
-func ptrToFloat64(p uintptr) float64            { return **(**float64)(unsafe.Pointer(&p)) }
-func ptrToBool(p uintptr) bool                  { return **(**bool)(unsafe.Pointer(&p)) }
-func ptrToBytes(p uintptr) []byte               { return **(**[]byte)(unsafe.Pointer(&p)) }
-func ptrToNumber(p uintptr) json.Number         { return **(**json.Number)(unsafe.Pointer(&p)) }
-func ptrToString(p uintptr) string              { return **(**string)(unsafe.Pointer(&p)) }
+
+func ptrToFloat32(p uintptr) float32 { return **(**float32)(unsafe.Pointer(&p)) }
+
+func ptrToFloat64(p uintptr) float64 { return **(**float64)(unsafe.Pointer(&p)) }
+
+func ptrToBool(p uintptr) bool { return **(**bool)(unsafe.Pointer(&p)) }
+
+func ptrToBytes(p uintptr) []byte { return **(**[]byte)(unsafe.Pointer(&p)) }
+
+func ptrToNumber(p uintptr) json.Number { return **(**json.Number)(unsafe.Pointer(&p)) }
+
+func ptrToString(p uintptr) string { return **(**string)(unsafe.Pointer(&p)) }
+
 func ptrToSlice(p uintptr) *runtime.SliceHeader { return *(**runtime.SliceHeader)(unsafe.Pointer(&p)) }
+
 func ptrToPtr(p uintptr) uintptr {
 	return uintptr(**(**unsafe.Pointer)(unsafe.Pointer(&p)))
 }
+
 func ptrToNPtr(p uintptr, ptrNum uint8) uintptr {
 	for i := uint8(0); i < ptrNum; i++ {
 		if p == 0 {
@@ -97,8 +106,9 @@ func ptrToNPtr(p uintptr, ptrNum uint8) uintptr {
 func ptrToUnsafePtr(p uintptr) unsafe.Pointer {
 	return *(*unsafe.Pointer)(unsafe.Pointer(&p))
 }
-func ptrToInterface(code *encoder.Opcode, p uintptr) interface{} {
-	return *(*interface{})(unsafe.Pointer(&emptyInterface{
+
+func ptrToInterface(code *encoder.Opcode, p uintptr) any {
+	return *(*any)(unsafe.Pointer(&emptyInterface{
 		typ: code.Type,
 		ptr: *(*unsafe.Pointer)(unsafe.Pointer(&p)),
 	}))
@@ -204,11 +214,11 @@ func appendMapEnd(_ *encoder.RuntimeContext, _ *encoder.Opcode, b []byte) []byte
 	return b
 }
 
-func appendMarshalJSON(ctx *encoder.RuntimeContext, code *encoder.Opcode, b []byte, v interface{}) ([]byte, error) {
+func appendMarshalJSON(ctx *encoder.RuntimeContext, code *encoder.Opcode, b []byte, v any) ([]byte, error) {
 	return encoder.AppendMarshalJSON(ctx, code, b, v)
 }
 
-func appendMarshalText(ctx *encoder.RuntimeContext, code *encoder.Opcode, b []byte, v interface{}) ([]byte, error) {
+func appendMarshalText(ctx *encoder.RuntimeContext, code *encoder.Opcode, b []byte, v any) ([]byte, error) {
 	format := ctx.Option.ColorScheme.String
 	b = append(b, format.Header...)
 	bb, err := encoder.AppendMarshalText(ctx, code, b, v)
@@ -268,7 +278,10 @@ func appendStructEndSkipLast(ctx *encoder.RuntimeContext, code *encoder.Opcode, 
 	return appendStructEnd(ctx, code, b)
 }
 
-func restoreIndent(_ *encoder.RuntimeContext, _ *encoder.Opcode, _ uintptr)               {}
-func storeIndent(_ uintptr, _ *encoder.Opcode, _ uintptr)                                 {}
-func appendMapKeyIndent(_ *encoder.RuntimeContext, _ *encoder.Opcode, b []byte) []byte    { return b }
+func restoreIndent(_ *encoder.RuntimeContext, _ *encoder.Opcode, _ uintptr) {}
+
+func storeIndent(_ uintptr, _ *encoder.Opcode, _ uintptr) {}
+
+func appendMapKeyIndent(_ *encoder.RuntimeContext, _ *encoder.Opcode, b []byte) []byte { return b }
+
 func appendArrayElemIndent(_ *encoder.RuntimeContext, _ *encoder.Opcode, b []byte) []byte { return b }

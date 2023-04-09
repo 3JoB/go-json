@@ -3,7 +3,7 @@ package json_test
 import (
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestColorize(t *testing.T) {
@@ -16,7 +16,7 @@ func TestColorize(t *testing.T) {
 		F []byte
 		G []int
 		H *struct{}
-		I map[string]interface{}
+		I map[string]any
 	}{
 		A: 123,
 		B: 456,
@@ -26,7 +26,7 @@ func TestColorize(t *testing.T) {
 		F: []byte("binary"),
 		G: []int{1, 2, 3, 4},
 		H: nil,
-		I: map[string]interface{}{
+		I: map[string]any{
 			"mapA": -10,
 			"mapB": 10,
 			"mapC": nil,

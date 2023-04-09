@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestCoverFloat32(t *testing.T) {
@@ -37,7 +37,7 @@ func TestCoverFloat32(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "Float32",
@@ -665,7 +665,7 @@ func TestCoverFloat32(t *testing.T) {
 				}
 			}{A: struct {
 				A *float32 `json:"a"`
-			}{float32ptr(1)}},
+			}{A: float32ptr(1)}},
 		},
 		{
 			name: "HeadFloat32PtrNotRootOmitEmpty",
@@ -675,7 +675,7 @@ func TestCoverFloat32(t *testing.T) {
 				}
 			}{A: struct {
 				A *float32 `json:"a,omitempty"`
-			}{float32ptr(1)}},
+			}{A: float32ptr(1)}},
 		},
 		{
 			name: "HeadFloat32PtrNotRootString",
@@ -685,7 +685,7 @@ func TestCoverFloat32(t *testing.T) {
 				}
 			}{A: struct {
 				A *float32 `json:"a,string"`
-			}{float32ptr(1)}},
+			}{A: float32ptr(1)}},
 		},
 		{
 			name: "HeadFloat32PtrNotRootStringOmitEmpty",
@@ -695,7 +695,7 @@ func TestCoverFloat32(t *testing.T) {
 				}
 			}{A: struct {
 				A *float32 `json:"a,string,omitempty"`
-			}{float32ptr(1)}},
+			}{A: float32ptr(1)}},
 		},
 
 		// HeadFloat32PtrNilNotRoot

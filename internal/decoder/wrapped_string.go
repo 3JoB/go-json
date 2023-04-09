@@ -1,11 +1,12 @@
 package decoder
 
 import (
-	"fmt"
-	"reflect"
+	"errors"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type wrappedStringDecoder struct {
@@ -69,5 +70,5 @@ func (d *wrappedStringDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, 
 }
 
 func (d *wrappedStringDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: wrapped string decoder does not support decode path")
+	return nil, 0, errors.New("json: wrapped string decoder does not support decode path")
 }

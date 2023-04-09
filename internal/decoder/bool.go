@@ -1,10 +1,9 @@
 package decoder
 
 import (
-	"fmt"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/errors"
 )
 
 type boolDecoder struct {
@@ -79,5 +78,5 @@ func (d *boolDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.
 }
 
 func (d *boolDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: bool decoder does not support decode path")
+	return nil, 0, errors.New("json: bool decoder does not support decode path")
 }

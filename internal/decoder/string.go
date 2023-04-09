@@ -3,13 +3,14 @@ package decoder
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json/internal/errors"
 )
 
 type stringDecoder struct {
@@ -344,7 +345,7 @@ func (d *stringDecoder) decodeByte(buf []byte, cursor int64) ([]byte, int64, err
 						}
 						for i := int64(1); i <= 4; i++ {
 							c := char(b, cursor+i)
-							if !(('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')) {
+							if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 								return nil, 0, errors.ErrSyntax(fmt.Sprintf("json: invalid character %c in \\u hexadecimal character escape", c), cursor+i)
 							}
 						}

@@ -7,7 +7,7 @@ package json_test
 import (
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 type basicLatin2xTag struct {
@@ -75,26 +75,26 @@ type unicodeTag struct {
 }
 
 var structTagObjectKeyTests = []struct {
-	raw   interface{}
+	raw   any
 	value string
 	key   string
 }{
-	{basicLatin2xTag{"2x"}, "2x", "$%-/"},
-	{basicLatin3xTag{"3x"}, "3x", "0123456789"},
-	{basicLatin4xTag{"4x"}, "4x", "ABCDEFGHIJKLMO"},
-	{basicLatin5xTag{"5x"}, "5x", "PQRSTUVWXYZ_"},
-	{basicLatin6xTag{"6x"}, "6x", "abcdefghijklmno"},
-	{basicLatin7xTag{"7x"}, "7x", "pqrstuvwxyz"},
-	{miscPlaneTag{"いろはにほへと"}, "いろはにほへと", "色は匂へど"},
-	{dashTag{"foo"}, "foo", "-"},
-	{emptyTag{"Pour Moi"}, "Pour Moi", "W"},
-	{misnamedTag{"Animal Kingdom"}, "Animal Kingdom", "X"},
-	{badFormatTag{"Orfevre"}, "Orfevre", "Y"},
-	{badCodeTag{"Reliable Man"}, "Reliable Man", "Z"},
-	{percentSlashTag{"brut"}, "brut", "text/html%"},
-	{punctuationTag{"Union Rags"}, "Union Rags", "!#$%&()*+-./:<=>?@[]^_{|}~"},
-	{spaceTag{"Perreddu"}, "Perreddu", "With space"},
-	{unicodeTag{"Loukanikos"}, "Loukanikos", "Ελλάδα"},
+	{raw: basicLatin2xTag{V: "2x"}, value: "2x", key: "$%-/"},
+	{raw: basicLatin3xTag{V: "3x"}, value: "3x", key: "0123456789"},
+	{raw: basicLatin4xTag{V: "4x"}, value: "4x", key: "ABCDEFGHIJKLMO"},
+	{raw: basicLatin5xTag{V: "5x"}, value: "5x", key: "PQRSTUVWXYZ_"},
+	{raw: basicLatin6xTag{V: "6x"}, value: "6x", key: "abcdefghijklmno"},
+	{raw: basicLatin7xTag{V: "7x"}, value: "7x", key: "pqrstuvwxyz"},
+	{raw: miscPlaneTag{V: "いろはにほへと"}, value: "いろはにほへと", key: "色は匂へど"},
+	{raw: dashTag{V: "foo"}, value: "foo", key: "-"},
+	{raw: emptyTag{W: "Pour Moi"}, value: "Pour Moi", key: "W"},
+	{raw: misnamedTag{X: "Animal Kingdom"}, value: "Animal Kingdom", key: "X"},
+	{raw: badFormatTag{Y: "Orfevre"}, value: "Orfevre", key: "Y"},
+	{raw: badCodeTag{Z: "Reliable Man"}, value: "Reliable Man", key: "Z"},
+	{raw: percentSlashTag{V: "brut"}, value: "brut", key: "text/html%"},
+	{raw: punctuationTag{V: "Union Rags"}, value: "Union Rags", key: "!#$%&()*+-./:<=>?@[]^_{|}~"},
+	{raw: spaceTag{Q: "Perreddu"}, value: "Perreddu", key: "With space"},
+	{raw: unicodeTag{W: "Loukanikos"}, value: "Loukanikos", key: "Ελλάδα"},
 }
 
 func TestStructTagObjectKey(t *testing.T) {
@@ -103,12 +103,12 @@ func TestStructTagObjectKey(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Marshal(%#q) failed: %v", tt.raw, err)
 		}
-		var f interface{}
+		var f any
 		err = json.Unmarshal(b, &f)
 		if err != nil {
 			t.Fatalf("Unmarshal(%#q) failed: %v", b, err)
 		}
-		for i, v := range f.(map[string]interface{}) {
+		for i, v := range f.(map[string]any) {
 			switch i {
 			case tt.key:
 				if s, ok := v.(string); !ok || s != tt.value {

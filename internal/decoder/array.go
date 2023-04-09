@@ -1,11 +1,10 @@
 package decoder
 
 import (
-	"fmt"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type arrayDecoder struct {
@@ -172,5 +171,5 @@ func (d *arrayDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe
 }
 
 func (d *arrayDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: array decoder does not support decode path")
+	return nil, 0, errors.New("json: array decoder does not support decode path")
 }

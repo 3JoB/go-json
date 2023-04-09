@@ -1,11 +1,12 @@
 package decoder
 
 import (
-	"reflect"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type mapDecoder struct {
@@ -36,7 +37,7 @@ const (
 	mapMaxElemSize = 128
 )
 
-// See detail: https://github.com/goccy/go-json/pull/283
+// See detail: https://github.com/3JoB/go-json/pull/283
 func canUseAssignFaststrType(key *runtime.Type, value *runtime.Type) bool {
 	indirectElem := value.Size() > mapMaxElemSize
 	if indirectElem {

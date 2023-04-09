@@ -2,9 +2,25 @@ package errors
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
+
+	"github.com/3JoB/go-reflect"
 )
+
+// New returns an error that formats as the given text.
+// Each call to New returns a distinct error value even if the text is identical.
+func New(text string) error {
+	return &errorString{s: text}
+}
+
+// errorString is a trivial implementation of error.
+type errorString struct {
+	s string
+}
+
+func (e *errorString) Error() string {
+	return e.s
+}
 
 type InvalidUTF8Error struct {
 	S string // the whole string value that caused the error
@@ -171,7 +187,7 @@ func (e *PathError) Error() string {
 	return fmt.Sprintf("json: invalid path format: %s", e.msg)
 }
 
-func ErrInvalidPath(msg string, args ...interface{}) *PathError {
+func ErrInvalidPath(msg string, args ...any) *PathError {
 	if len(args) != 0 {
 		return &PathError{msg: fmt.Sprintf(msg, args...)}
 	}

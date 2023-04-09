@@ -11,14 +11,15 @@ import (
 	"log"
 	"math"
 	"math/big"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-reflect"
+
+	"github.com/3JoB/go-json"
 )
 
 type recursiveT struct {
@@ -249,24 +250,24 @@ func Test_Marshal(t *testing.T) {
 
 		t.Run("omitempty", func(t *testing.T) {
 			type T struct {
-				A int                    `json:",omitempty"`
-				B int8                   `json:",omitempty"`
-				C int16                  `json:",omitempty"`
-				D int32                  `json:",omitempty"`
-				E int64                  `json:",omitempty"`
-				F uint                   `json:",omitempty"`
-				G uint8                  `json:",omitempty"`
-				H uint16                 `json:",omitempty"`
-				I uint32                 `json:",omitempty"`
-				J uint64                 `json:",omitempty"`
-				K float32                `json:",omitempty"`
-				L float64                `json:",omitempty"`
-				O string                 `json:",omitempty"`
-				P bool                   `json:",omitempty"`
-				Q []int                  `json:",omitempty"`
-				R map[string]interface{} `json:",omitempty"`
-				S *struct{}              `json:",omitempty"`
-				T int                    `json:"t,omitempty"`
+				A int            `json:",omitempty"`
+				B int8           `json:",omitempty"`
+				C int16          `json:",omitempty"`
+				D int32          `json:",omitempty"`
+				E int64          `json:",omitempty"`
+				F uint           `json:",omitempty"`
+				G uint8          `json:",omitempty"`
+				H uint16         `json:",omitempty"`
+				I uint32         `json:",omitempty"`
+				J uint64         `json:",omitempty"`
+				K float32        `json:",omitempty"`
+				L float64        `json:",omitempty"`
+				O string         `json:",omitempty"`
+				P bool           `json:",omitempty"`
+				Q []int          `json:",omitempty"`
+				R map[string]any `json:",omitempty"`
+				S *struct{}      `json:",omitempty"`
+				T int            `json:"t,omitempty"`
 			}
 			var v T
 			v.T = 1
@@ -375,10 +376,10 @@ func Test_Marshal(t *testing.T) {
 			})
 			t.Run("map", func(t *testing.T) {
 				v := new(struct {
-					A int                    `json:"a,omitempty"`
-					B map[string]interface{} `json:"b"`
+					A int            `json:"a,omitempty"`
+					B map[string]any `json:"b"`
 				})
-				v.B = map[string]interface{}{"c": 1}
+				v.B = map[string]any{"c": 1}
 				bytes, err := json.Marshal(v)
 				assertErr(t, err)
 				assertEq(t, "array", `{"b":{"c":1}}`, string(bytes))
@@ -422,7 +423,7 @@ func Test_Marshal(t *testing.T) {
 			assertEq(t, "[]int", `[1,2,3,4]`, string(bytes))
 		})
 		t.Run("[]interface{}", func(t *testing.T) {
-			bytes, err := json.Marshal([]interface{}{1, 2.1, "hello"})
+			bytes, err := json.Marshal([]any{1, 2.1, "hello"})
 			assertErr(t, err)
 			assertEq(t, "[]interface{}", `[1,2.1,"hello"]`, string(bytes))
 		})
@@ -452,7 +453,7 @@ func Test_Marshal(t *testing.T) {
 			type T struct {
 				A int
 			}
-			v := map[string]interface{}{
+			v := map[string]any{
 				"a": 1,
 				"b": 2.1,
 				"c": &T{
@@ -471,7 +472,7 @@ type mustErrTypeForDebug struct{}
 
 func (mustErrTypeForDebug) MarshalJSON() ([]byte, error) {
 	panic("panic")
-	return nil, fmt.Errorf("panic")
+	return nil, errors.New("panic")
 }
 
 func TestDebugMode(t *testing.T) {
@@ -555,12 +556,12 @@ func Test_MarshalIndent(t *testing.T) {
 	indent := "\t"
 	t.Run("struct", func(t *testing.T) {
 		v := struct {
-			A int         `json:"a"`
-			B uint        `json:"b"`
-			C string      `json:"c"`
-			D interface{} `json:"d"`
-			X int         `json:"-"`  // ignore field
-			a int         `json:"aa"` // private field
+			A int    `json:"a"`
+			B uint   `json:"b"`
+			C string `json:"c"`
+			D any    `json:"d"`
+			X int    `json:"-"`  // ignore field
+			a int    `json:"aa"` // private field
 		}{
 			A: -1,
 			B: 1,
@@ -585,7 +586,7 @@ func Test_MarshalIndent(t *testing.T) {
 			assertEq(t, "[]int", result, string(bytes))
 		})
 		t.Run("[]interface{}", func(t *testing.T) {
-			bytes, err := json.MarshalIndent([]interface{}{1, 2.1, "hello"}, prefix, indent)
+			bytes, err := json.MarshalIndent([]any{1, 2.1, "hello"}, prefix, indent)
 			assertErr(t, err)
 			result := "[\n-\t1,\n-\t2.1,\n-\t\"hello\"\n-]"
 			assertEq(t, "[]interface{}", result, string(bytes))
@@ -615,7 +616,7 @@ func Test_MarshalIndent(t *testing.T) {
 				E int
 				F int
 			}
-			v := map[string]interface{}{
+			v := map[string]any{
 				"a": 1,
 				"b": 2.1,
 				"c": &T{
@@ -705,7 +706,9 @@ func TestRoundtripStringTag(t *testing.T) {
 
 // byte slices are special even if they're renamed types.
 type renamedByte byte
+
 type renamedByteSlice []byte
+
 type renamedRenamedByteSlice []renamedByte
 
 func TestEncodeRenamedByteSlice(t *testing.T) {
@@ -745,74 +748,74 @@ func TestMarshalRawMessageValue(t *testing.T) {
 	)
 
 	tests := []struct {
-		in   interface{}
+		in   any
 		want string
 		ok   bool
 	}{
 		// Test with nil RawMessage.
-		{rawNil, "null", true},
-		{&rawNil, "null", true},
-		{[]interface{}{rawNil}, "[null]", true},
-		{&[]interface{}{rawNil}, "[null]", true},
-		{[]interface{}{&rawNil}, "[null]", true},
-		{&[]interface{}{&rawNil}, "[null]", true},
-		{struct{ M json.RawMessage }{rawNil}, `{"M":null}`, true},
-		{&struct{ M json.RawMessage }{rawNil}, `{"M":null}`, true},
-		{struct{ M *json.RawMessage }{&rawNil}, `{"M":null}`, true},
-		{&struct{ M *json.RawMessage }{&rawNil}, `{"M":null}`, true},
-		{map[string]interface{}{"M": rawNil}, `{"M":null}`, true},
-		{&map[string]interface{}{"M": rawNil}, `{"M":null}`, true},
-		{map[string]interface{}{"M": &rawNil}, `{"M":null}`, true},
-		{&map[string]interface{}{"M": &rawNil}, `{"M":null}`, true},
-		{T1{rawNil}, "{}", true},
-		{T2{&rawNil}, `{"M":null}`, true},
-		{&T1{rawNil}, "{}", true},
-		{&T2{&rawNil}, `{"M":null}`, true},
+		{in: rawNil, want: "null", ok: true},
+		{in: &rawNil, want: "null", ok: true},
+		{in: []any{rawNil}, want: "[null]", ok: true},
+		{in: &[]any{rawNil}, want: "[null]", ok: true},
+		{in: []any{&rawNil}, want: "[null]", ok: true},
+		{in: &[]any{&rawNil}, want: "[null]", ok: true},
+		{in: struct{ M json.RawMessage }{M: rawNil}, want: `{"M":null}`, ok: true},
+		{in: &struct{ M json.RawMessage }{M: rawNil}, want: `{"M":null}`, ok: true},
+		{in: struct{ M *json.RawMessage }{M: &rawNil}, want: `{"M":null}`, ok: true},
+		{in: &struct{ M *json.RawMessage }{M: &rawNil}, want: `{"M":null}`, ok: true},
+		{in: map[string]any{"M": rawNil}, want: `{"M":null}`, ok: true},
+		{in: &map[string]any{"M": rawNil}, want: `{"M":null}`, ok: true},
+		{in: map[string]any{"M": &rawNil}, want: `{"M":null}`, ok: true},
+		{in: &map[string]any{"M": &rawNil}, want: `{"M":null}`, ok: true},
+		{in: T1{M: rawNil}, want: "{}", ok: true},
+		{in: T2{M: &rawNil}, want: `{"M":null}`, ok: true},
+		{in: &T1{M: rawNil}, want: "{}", ok: true},
+		{in: &T2{M: &rawNil}, want: `{"M":null}`, ok: true},
 
 		// Test with empty, but non-nil, RawMessage.
-		{rawEmpty, "", false},
-		{&rawEmpty, "", false},
-		{[]interface{}{rawEmpty}, "", false},
-		{&[]interface{}{rawEmpty}, "", false},
-		{[]interface{}{&rawEmpty}, "", false},
-		{&[]interface{}{&rawEmpty}, "", false},
-		{struct{ X json.RawMessage }{rawEmpty}, "", false},
-		{&struct{ X json.RawMessage }{rawEmpty}, "", false},
-		{struct{ X *json.RawMessage }{&rawEmpty}, "", false},
-		{&struct{ X *json.RawMessage }{&rawEmpty}, "", false},
-		{map[string]interface{}{"nil": rawEmpty}, "", false},
-		{&map[string]interface{}{"nil": rawEmpty}, "", false},
-		{map[string]interface{}{"nil": &rawEmpty}, "", false},
-		{&map[string]interface{}{"nil": &rawEmpty}, "", false},
+		{in: rawEmpty, want: "", ok: false},
+		{in: &rawEmpty, want: "", ok: false},
+		{in: []any{rawEmpty}, want: "", ok: false},
+		{in: &[]any{rawEmpty}, want: "", ok: false},
+		{in: []any{&rawEmpty}, want: "", ok: false},
+		{in: &[]any{&rawEmpty}, want: "", ok: false},
+		{in: struct{ X json.RawMessage }{X: rawEmpty}, want: "", ok: false},
+		{in: &struct{ X json.RawMessage }{X: rawEmpty}, want: "", ok: false},
+		{in: struct{ X *json.RawMessage }{X: &rawEmpty}, want: "", ok: false},
+		{in: &struct{ X *json.RawMessage }{X: &rawEmpty}, want: "", ok: false},
+		{in: map[string]any{"nil": rawEmpty}, want: "", ok: false},
+		{in: &map[string]any{"nil": rawEmpty}, want: "", ok: false},
+		{in: map[string]any{"nil": &rawEmpty}, want: "", ok: false},
+		{in: &map[string]any{"nil": &rawEmpty}, want: "", ok: false},
 
-		{T1{rawEmpty}, "{}", true},
-		{T2{&rawEmpty}, "", false},
-		{&T1{rawEmpty}, "{}", true},
-		{&T2{&rawEmpty}, "", false},
+		{in: T1{M: rawEmpty}, want: "{}", ok: true},
+		{in: T2{M: &rawEmpty}, want: "", ok: false},
+		{in: &T1{M: rawEmpty}, want: "{}", ok: true},
+		{in: &T2{M: &rawEmpty}, want: "", ok: false},
 
 		// Test with RawMessage with some text.
 		//
 		// The tests below marked with Issue6458 used to generate "ImZvbyI=" instead "foo".
 		// This behavior was intentionally changed in Go 1.8.
 		// See https://golang.org/issues/14493#issuecomment-255857318
-		{rawText, `"foo"`, true}, // Issue6458
-		{&rawText, `"foo"`, true},
-		{[]interface{}{rawText}, `["foo"]`, true},  // Issue6458
-		{&[]interface{}{rawText}, `["foo"]`, true}, // Issue6458
-		{[]interface{}{&rawText}, `["foo"]`, true},
-		{&[]interface{}{&rawText}, `["foo"]`, true},
-		{struct{ M json.RawMessage }{rawText}, `{"M":"foo"}`, true}, // Issue6458
-		{&struct{ M json.RawMessage }{rawText}, `{"M":"foo"}`, true},
-		{struct{ M *json.RawMessage }{&rawText}, `{"M":"foo"}`, true},
-		{&struct{ M *json.RawMessage }{&rawText}, `{"M":"foo"}`, true},
-		{map[string]interface{}{"M": rawText}, `{"M":"foo"}`, true},  // Issue6458
-		{&map[string]interface{}{"M": rawText}, `{"M":"foo"}`, true}, // Issue6458
-		{map[string]interface{}{"M": &rawText}, `{"M":"foo"}`, true},
-		{&map[string]interface{}{"M": &rawText}, `{"M":"foo"}`, true},
-		{T1{rawText}, `{"M":"foo"}`, true}, // Issue6458
-		{T2{&rawText}, `{"M":"foo"}`, true},
-		{&T1{rawText}, `{"M":"foo"}`, true},
-		{&T2{&rawText}, `{"M":"foo"}`, true},
+		{in: rawText, want: `"foo"`, ok: true}, // Issue6458
+		{in: &rawText, want: `"foo"`, ok: true},
+		{in: []any{rawText}, want: `["foo"]`, ok: true},  // Issue6458
+		{in: &[]any{rawText}, want: `["foo"]`, ok: true}, // Issue6458
+		{in: []any{&rawText}, want: `["foo"]`, ok: true},
+		{in: &[]any{&rawText}, want: `["foo"]`, ok: true},
+		{in: struct{ M json.RawMessage }{M: rawText}, want: `{"M":"foo"}`, ok: true}, // Issue6458
+		{in: &struct{ M json.RawMessage }{M: rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: struct{ M *json.RawMessage }{M: &rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: &struct{ M *json.RawMessage }{M: &rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: map[string]any{"M": rawText}, want: `{"M":"foo"}`, ok: true},  // Issue6458
+		{in: &map[string]any{"M": rawText}, want: `{"M":"foo"}`, ok: true}, // Issue6458
+		{in: map[string]any{"M": &rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: &map[string]any{"M": &rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: T1{M: rawText}, want: `{"M":"foo"}`, ok: true}, // Issue6458
+		{in: T2{M: &rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: &T1{M: rawText}, want: `{"M":"foo"}`, ok: true},
+		{in: &T2{M: &rawText}, want: `{"M":"foo"}`, ok: true},
 	}
 
 	for i, tt := range tests {
@@ -986,12 +989,12 @@ func TestMarshalerError(t *testing.T) {
 		want string
 	}{
 		{
-			json.NewMarshalerError(st, fmt.Errorf(errText), ""),
-			"json: error calling MarshalJSON for type " + st.String() + ": " + errText,
+			err:  json.NewMarshalerError(st, fmt.Errorf(errText), ""),
+			want: "json: error calling MarshalJSON for type " + st.String() + ": " + errText,
 		},
 		{
-			json.NewMarshalerError(st, fmt.Errorf(errText), "TestMarshalerError"),
-			"json: error calling TestMarshalerError for type " + st.String() + ": " + errText,
+			err:  json.NewMarshalerError(st, fmt.Errorf(errText), "TestMarshalerError"),
+			want: "json: error calling TestMarshalerError for type " + st.String() + ": " + errText,
 		},
 	}
 
@@ -1023,10 +1026,10 @@ func (u *unmarshalerText) UnmarshalText(b []byte) error {
 
 func TestTextMarshalerMapKeysAreSorted(t *testing.T) {
 	data := map[unmarshalerText]int{
-		{"x", "y"}: 1,
-		{"y", "x"}: 2,
-		{"a", "z"}: 3,
-		{"z", "a"}: 4,
+		{A: "x", B: "y"}: 1,
+		{A: "y", B: "x"}: 2,
+		{A: "a", B: "z"}: 3,
+		{A: "z", B: "a"}: 4,
 	}
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -1074,7 +1077,7 @@ var badFloatREs = []*regexp.Regexp{
 	re(`\.[0-9]+0(e|$)`),        // no trailing zero in fraction
 	re(`^-?(0|[0-9]{2,})\..*e`), // exponential notation must have normalized mantissa
 	re(`e[0-9]`),                // positive exponent must be signed
-	//re(`e[+-]0`),                // exponent must not have leading zeros
+	// re(`e[+-]0`),                // exponent must not have leading zeros
 	re(`e-[1-6]$`),             // not tiny enough for exponential notation
 	re(`e+(.|1.|20)$`),         // not big enough for exponential notation
 	re(`^-?0\.0000000`),        // too tiny, should use exponential notation
@@ -1087,10 +1090,10 @@ var badFloatREs = []*regexp.Regexp{
 }
 
 func TestMarshalFloat(t *testing.T) {
-	//t.Parallel()
+	// t.Parallel()
 	nfail := 0
 	test := func(f float64, bits int) {
-		vf := interface{}(f)
+		vf := any(f)
 		if bits == 32 {
 			f = float64(float32(f)) // round
 			vf = float32(f)
@@ -1173,38 +1176,38 @@ var encodeStringTests = []struct {
 	in  string
 	out string
 }{
-	{"\x00", `"\u0000"`},
-	{"\x01", `"\u0001"`},
-	{"\x02", `"\u0002"`},
-	{"\x03", `"\u0003"`},
-	{"\x04", `"\u0004"`},
-	{"\x05", `"\u0005"`},
-	{"\x06", `"\u0006"`},
-	{"\x07", `"\u0007"`},
-	{"\x08", `"\u0008"`},
-	{"\x09", `"\t"`},
-	{"\x0a", `"\n"`},
-	{"\x0b", `"\u000b"`},
-	{"\x0c", `"\u000c"`},
-	{"\x0d", `"\r"`},
-	{"\x0e", `"\u000e"`},
-	{"\x0f", `"\u000f"`},
-	{"\x10", `"\u0010"`},
-	{"\x11", `"\u0011"`},
-	{"\x12", `"\u0012"`},
-	{"\x13", `"\u0013"`},
-	{"\x14", `"\u0014"`},
-	{"\x15", `"\u0015"`},
-	{"\x16", `"\u0016"`},
-	{"\x17", `"\u0017"`},
-	{"\x18", `"\u0018"`},
-	{"\x19", `"\u0019"`},
-	{"\x1a", `"\u001a"`},
-	{"\x1b", `"\u001b"`},
-	{"\x1c", `"\u001c"`},
-	{"\x1d", `"\u001d"`},
-	{"\x1e", `"\u001e"`},
-	{"\x1f", `"\u001f"`},
+	{in: "\x00", out: `"\u0000"`},
+	{in: "\x01", out: `"\u0001"`},
+	{in: "\x02", out: `"\u0002"`},
+	{in: "\x03", out: `"\u0003"`},
+	{in: "\x04", out: `"\u0004"`},
+	{in: "\x05", out: `"\u0005"`},
+	{in: "\x06", out: `"\u0006"`},
+	{in: "\x07", out: `"\u0007"`},
+	{in: "\x08", out: `"\u0008"`},
+	{in: "\x09", out: `"\t"`},
+	{in: "\x0a", out: `"\n"`},
+	{in: "\x0b", out: `"\u000b"`},
+	{in: "\x0c", out: `"\u000c"`},
+	{in: "\x0d", out: `"\r"`},
+	{in: "\x0e", out: `"\u000e"`},
+	{in: "\x0f", out: `"\u000f"`},
+	{in: "\x10", out: `"\u0010"`},
+	{in: "\x11", out: `"\u0011"`},
+	{in: "\x12", out: `"\u0012"`},
+	{in: "\x13", out: `"\u0013"`},
+	{in: "\x14", out: `"\u0014"`},
+	{in: "\x15", out: `"\u0015"`},
+	{in: "\x16", out: `"\u0016"`},
+	{in: "\x17", out: `"\u0017"`},
+	{in: "\x18", out: `"\u0018"`},
+	{in: "\x19", out: `"\u0019"`},
+	{in: "\x1a", out: `"\u001a"`},
+	{in: "\x1b", out: `"\u001b"`},
+	{in: "\x1c", out: `"\u001c"`},
+	{in: "\x1d", out: `"\u001d"`},
+	{in: "\x1e", out: `"\u001e"`},
+	{in: "\x1f", out: `"\u001f"`},
 }
 
 func TestEncodeString(t *testing.T) {
@@ -1237,7 +1240,7 @@ type textint int
 
 func (i textint) MarshalText() ([]byte, error) { return tenc(`TI:%d`, i) }
 
-func tenc(format string, a ...interface{}) ([]byte, error) {
+func tenc(format string, a ...any) ([]byte, error) {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, format, a...)
 	return buf.Bytes(), nil
@@ -1246,23 +1249,23 @@ func tenc(format string, a ...interface{}) ([]byte, error) {
 // Issue 13783
 func TestEncodeBytekind(t *testing.T) {
 	testdata := []struct {
-		data interface{}
+		data any
 		want string
 	}{
-		{byte(7), "7"},
-		{jsonbyte(7), `{"JB":7}`},
-		{textbyte(4), `"TB:4"`},
-		{jsonint(5), `{"JI":5}`},
-		{textint(1), `"TI:1"`},
-		{[]byte{0, 1}, `"AAE="`},
+		{data: byte(7), want: "7"},
+		{data: jsonbyte(7), want: `{"JB":7}`},
+		{data: textbyte(4), want: `"TB:4"`},
+		{data: jsonint(5), want: `{"JI":5}`},
+		{data: textint(1), want: `"TI:1"`},
+		{data: []byte{0, 1}, want: `"AAE="`},
 
-		{[]jsonbyte{0, 1}, `[{"JB":0},{"JB":1}]`},
-		{[][]jsonbyte{{0, 1}, {3}}, `[[{"JB":0},{"JB":1}],[{"JB":3}]]`},
-		{[]textbyte{2, 3}, `["TB:2","TB:3"]`},
+		{data: []jsonbyte{0, 1}, want: `[{"JB":0},{"JB":1}]`},
+		{data: [][]jsonbyte{{0, 1}, {3}}, want: `[[{"JB":0},{"JB":1}],[{"JB":3}]]`},
+		{data: []textbyte{2, 3}, want: `["TB:2","TB:3"]`},
 
-		{[]jsonint{5, 4}, `[{"JI":5},{"JI":4}]`},
-		{[]textint{9, 3}, `["TI:9","TI:3"]`},
-		{[]int{9, 3}, `[9,3]`},
+		{data: []jsonint{5, 4}, want: `[{"JI":5},{"JI":4}]`},
+		{data: []textint{9, 3}, want: `["TI:9","TI:3"]`},
+		{data: []int{9, 3}, want: `[9,3]`},
 	}
 	for i, d := range testdata {
 		js, err := json.Marshal(d.data)
@@ -1316,7 +1319,7 @@ type PointerCycle struct {
 var pointerCycle = &PointerCycle{}
 
 type PointerCycleIndirect struct {
-	Ptrs []interface{}
+	Ptrs []any
 }
 
 var pointerCycleIndirect = &PointerCycleIndirect{}
@@ -1327,7 +1330,7 @@ func init() {
 	samePointerNoCycle.Ptr2 = ptr
 
 	pointerCycle.Ptr = pointerCycle
-	pointerCycleIndirect.Ptrs = []interface{}{pointerCycleIndirect}
+	pointerCycleIndirect.Ptrs = []any{pointerCycleIndirect}
 }
 
 func TestSamePointerNoCycle(t *testing.T) {
@@ -1336,7 +1339,7 @@ func TestSamePointerNoCycle(t *testing.T) {
 	}
 }
 
-var unsupportedValues = []interface{}{
+var unsupportedValues = []any{
 	math.NaN(),
 	math.Inf(-1),
 	math.Inf(1),
@@ -1360,7 +1363,7 @@ func TestIssue10281(t *testing.T) {
 	type Foo struct {
 		N json.Number
 	}
-	x := Foo{json.Number(`invalid`)}
+	x := Foo{N: json.Number(`invalid`)}
 
 	b, err := json.Marshal(&x)
 	if err == nil {
@@ -1425,22 +1428,22 @@ func (nm *nilTextMarshaler) MarshalText() ([]byte, error) {
 // See golang.org/issue/16042 and golang.org/issue/34235.
 func TestNilMarshal(t *testing.T) {
 	testCases := []struct {
-		v    interface{}
+		v    any
 		want string
 	}{
 		{v: nil, want: `null`},
 		{v: new(float64), want: `0`},
-		{v: []interface{}(nil), want: `null`},
+		{v: []any(nil), want: `null`},
 		{v: []string(nil), want: `null`},
 		{v: map[string]string(nil), want: `null`},
 		{v: []byte(nil), want: `null`},
-		{v: struct{ M string }{"gopher"}, want: `{"M":"gopher"}`},
+		{v: struct{ M string }{M: "gopher"}, want: `{"M":"gopher"}`},
 		{v: struct{ M json.Marshaler }{}, want: `{"M":null}`},
-		{v: struct{ M json.Marshaler }{(*nilJSONMarshaler)(nil)}, want: `{"M":"0zenil0"}`},
-		{v: struct{ M interface{} }{(*nilJSONMarshaler)(nil)}, want: `{"M":null}`},
+		{v: struct{ M json.Marshaler }{M: (*nilJSONMarshaler)(nil)}, want: `{"M":"0zenil0"}`},
+		{v: struct{ M any }{M: (*nilJSONMarshaler)(nil)}, want: `{"M":null}`},
 		{v: struct{ M encoding.TextMarshaler }{}, want: `{"M":null}`},
-		{v: struct{ M encoding.TextMarshaler }{(*nilTextMarshaler)(nil)}, want: `{"M":"0zenil0"}`},
-		{v: struct{ M interface{} }{(*nilTextMarshaler)(nil)}, want: `{"M":null}`},
+		{v: struct{ M encoding.TextMarshaler }{M: (*nilTextMarshaler)(nil)}, want: `{"M":"0zenil0"}`},
+		{v: struct{ M any }{M: (*nilTextMarshaler)(nil)}, want: `{"M":null}`},
 	}
 
 	for i, tt := range testCases {
@@ -1455,8 +1458,8 @@ func TestNilMarshal(t *testing.T) {
 // Issue 5245.
 func TestEmbeddedBug(t *testing.T) {
 	v := BugB{
-		BugA{"A"},
-		"B",
+		BugA: BugA{S: "A"},
+		S:    "B",
 	}
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -1495,8 +1498,8 @@ type BugY struct {
 // Test that a field with a tag dominates untagged fields.
 func TestTaggedFieldDominates(t *testing.T) {
 	v := BugY{
-		BugA{"BugA"},
-		BugD{"BugD"},
+		BugA: BugA{S: "BugA"},
+		BugD: BugD{XXX: "BugD"},
 	}
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -1518,11 +1521,11 @@ type BugZ struct {
 
 func TestDuplicatedFieldDisappears(t *testing.T) {
 	v := BugZ{
-		BugA{"BugA"},
-		BugC{"BugC"},
-		BugY{
-			BugA{"nested BugA"},
-			BugD{"nested BugD"},
+		BugA: BugA{S: "BugA"},
+		BugC: BugC{S: "BugC"},
+		BugY: BugY{
+			BugA: BugA{S: "nested BugA"},
+			BugD: BugD{XXX: "nested BugD"},
 		},
 	}
 	b, err := json.Marshal(v)
@@ -1538,15 +1541,15 @@ func TestDuplicatedFieldDisappears(t *testing.T) {
 
 func TestAnonymousFields(t *testing.T) {
 	tests := []struct {
-		label     string             // Test name
-		makeInput func() interface{} // Function to create input value
-		want      string             // Expected JSON output
+		label     string     // Test name
+		makeInput func() any // Function to create input value
+		want      string     // Expected JSON output
 	}{{
 		// Both S1 and S2 have a field named X. From the perspective of S,
 		// it is ambiguous which one X refers to.
 		// This should not serialize either field.
 		label: "AmbiguousField",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				S1 struct{ x, X int }
 				S2 struct{ x, X int }
@@ -1555,14 +1558,14 @@ func TestAnonymousFields(t *testing.T) {
 					S2
 				}
 			)
-			return S{S1{1, 2}, S2{3, 4}}
+			return S{S1: S1{x: 1, X: 2}, S2: S2{x: 3, X: 4}}
 		},
 		want: `{}`,
 	}, {
 		label: "DominantField",
 		// Both S1 and S2 have a field named X, but since S has an X field as
 		// well, it takes precedence over S1.X and S2.X.
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				S1 struct{ x, X int }
 				S2 struct{ x, X int }
@@ -1572,41 +1575,41 @@ func TestAnonymousFields(t *testing.T) {
 					x, X int
 				}
 			)
-			return S{S1{1, 2}, S2{3, 4}, 5, 6}
+			return S{S1: S1{x: 1, X: 2}, S2: S2{x: 3, X: 4}, x: 5, X: 6}
 		},
 		want: `{"X":6}`,
 	}, {
 		// Unexported embedded field of non-struct type should not be serialized.
 		label: "UnexportedEmbeddedInt",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				myInt int
 				S     struct{ myInt }
 			)
-			return S{5}
+			return S{myInt: 5}
 		},
 		want: `{}`,
 	}, {
 		// Exported embedded field of non-struct type should be serialized.
 		label: "ExportedEmbeddedInt",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				MyInt int
 				S     struct{ MyInt }
 			)
-			return S{5}
+			return S{MyInt: 5}
 		},
 		want: `{"MyInt":5}`,
 	}, {
 		// Unexported embedded field of pointer to non-struct type
 		// should not be serialized.
 		label: "UnexportedEmbeddedIntPointer",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				myInt int
 				S     struct{ *myInt }
 			)
-			s := S{new(myInt)}
+			s := S{myInt: new(myInt)}
 			*s.myInt = 5
 			return s
 		},
@@ -1615,12 +1618,12 @@ func TestAnonymousFields(t *testing.T) {
 		// Exported embedded field of pointer to non-struct type
 		// should be serialized.
 		label: "ExportedEmbeddedIntPointer",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				MyInt int
 				S     struct{ *MyInt }
 			)
-			s := S{new(MyInt)}
+			s := S{MyInt: new(MyInt)}
 			*s.MyInt = 5
 			return s
 		},
@@ -1630,7 +1633,7 @@ func TestAnonymousFields(t *testing.T) {
 		// exported fields be serialized regardless of whether the struct types
 		// themselves are exported.
 		label: "EmbeddedStruct",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				s1 struct{ x, X int }
 				S2 struct{ y, Y int }
@@ -1639,7 +1642,7 @@ func TestAnonymousFields(t *testing.T) {
 					S2
 				}
 			)
-			return S{s1{1, 2}, S2{3, 4}}
+			return S{s1: s1{x: 1, X: 2}, S2: S2{y: 3, Y: 4}}
 		},
 		want: `{"X":2,"Y":4}`,
 	}, {
@@ -1647,7 +1650,7 @@ func TestAnonymousFields(t *testing.T) {
 		// exported fields be serialized regardless of whether the struct types
 		// themselves are exported.
 		label: "EmbeddedStructPointer",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				s1 struct{ x, X int }
 				S2 struct{ y, Y int }
@@ -1656,14 +1659,14 @@ func TestAnonymousFields(t *testing.T) {
 					*S2
 				}
 			)
-			return S{&s1{1, 2}, &S2{3, 4}}
+			return S{s1: &s1{x: 1, X: 2}, S2: &S2{y: 3, Y: 4}}
 		},
 		want: `{"X":2,"Y":4}`,
 	}, {
 		// Exported fields on embedded unexported structs at multiple levels
 		// of nesting should still be serialized.
 		label: "NestedStructAndInts",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				MyInt1 int
 				MyInt2 int
@@ -1682,7 +1685,7 @@ func TestAnonymousFields(t *testing.T) {
 					myInt
 				}
 			)
-			return S{s1{1, 2, s2{3, 4}}, 6}
+			return S{s1: s1{MyInt1: 1, myInt: 2, s2: s2{MyInt2: 3, myInt: 4}}, myInt: 6}
 		},
 		want: `{"MyInt1":1,"MyInt2":3}`,
 	}, {
@@ -1690,7 +1693,7 @@ func TestAnonymousFields(t *testing.T) {
 		// the embedded fields behind it. Not properly doing so may
 		// result in the wrong output or reflect panics.
 		label: "EmbeddedFieldBehindNilPointer",
-		makeInput: func() interface{} {
+		makeInput: func() any {
 			type (
 				S2 struct{ Field string }
 				S  struct{ *S2 }
@@ -1724,8 +1727,8 @@ type Optionals struct {
 	Slr []string `json:"slr,random"`
 	Slo []string `json:"slo,omitempty"`
 
-	Mr map[string]interface{} `json:"mr"`
-	Mo map[string]interface{} `json:",omitempty"`
+	Mr map[string]any `json:"mr"`
+	Mo map[string]any `json:",omitempty"`
 
 	Fr float64 `json:"fr"`
 	Fo float64 `json:"fo,omitempty"`
@@ -1755,8 +1758,8 @@ var optionalsExpected = `{
 func TestOmitEmpty(t *testing.T) {
 	var o Optionals
 	o.Sw = "something"
-	o.Mr = map[string]interface{}{}
-	o.Mo = map[string]interface{}{}
+	o.Mr = map[string]any{}
+	o.Mo = map[string]any{}
 
 	got, err := json.MarshalIndent(&o, "", " ")
 	if err != nil {
@@ -1895,12 +1898,12 @@ func TestIssue179(t *testing.T) {
 }`
 	type T struct {
 		X struct {
-			T1 bool        `json:"t1,omitempty"`
-			T2 float64     `json:"t2,omitempty"`
-			T3 string      `json:"t3,omitempty"`
-			T4 []string    `json:"t4,omitempty"`
-			T5 *struct{}   `json:"t5,omitempty"`
-			T6 interface{} `json:"t6,omitempty"`
+			T1 bool      `json:"t1,omitempty"`
+			T2 float64   `json:"t2,omitempty"`
+			T3 string    `json:"t3,omitempty"`
+			T4 []string  `json:"t4,omitempty"`
+			T5 *struct{} `json:"t5,omitempty"`
+			T6 any       `json:"t6,omitempty"`
 		} `json:"x"`
 	}
 	var v T
@@ -1930,29 +1933,29 @@ func TestIssue179(t *testing.T) {
 func TestIssue180(t *testing.T) {
 	v := struct {
 		T struct {
-			T1 bool        `json:"t1"`
-			T2 float64     `json:"t2"`
-			T3 string      `json:"t3"`
-			T4 []string    `json:"t4"`
-			T5 *struct{}   `json:"t5"`
-			T6 interface{} `json:"t6"`
-			T7 [][]string  `json:"t7"`
+			T1 bool       `json:"t1"`
+			T2 float64    `json:"t2"`
+			T3 string     `json:"t3"`
+			T4 []string   `json:"t4"`
+			T5 *struct{}  `json:"t5"`
+			T6 any        `json:"t6"`
+			T7 [][]string `json:"t7"`
 		} `json:"t"`
 	}{
 		T: struct {
-			T1 bool        `json:"t1"`
-			T2 float64     `json:"t2"`
-			T3 string      `json:"t3"`
-			T4 []string    `json:"t4"`
-			T5 *struct{}   `json:"t5"`
-			T6 interface{} `json:"t6"`
-			T7 [][]string  `json:"t7"`
+			T1 bool       `json:"t1"`
+			T2 float64    `json:"t2"`
+			T3 string     `json:"t3"`
+			T4 []string   `json:"t4"`
+			T5 *struct{}  `json:"t5"`
+			T6 any        `json:"t6"`
+			T7 [][]string `json:"t7"`
 		}{
 			T4: []string{},
 			T7: [][]string{
-				[]string{""},
-				[]string{"hello", "world"},
-				[]string{},
+				{""},
+				{"hello", "world"},
+				{},
 			},
 		},
 	}
@@ -1972,12 +1975,12 @@ func TestIssue180(t *testing.T) {
 func TestIssue235(t *testing.T) {
 	type TaskMessage struct {
 		Type      string
-		Payload   map[string]interface{}
+		Payload   map[string]any
 		UniqueKey string
 	}
 	msg := TaskMessage{
-		Payload: map[string]interface{}{
-			"sent_at": map[string]interface{}{
+		Payload: map[string]any{
+			"sent_at": map[string]any{
 				"Time":  "0001-01-01T00:00:00Z",
 				"Valid": false,
 			},
@@ -1989,7 +1992,7 @@ func TestIssue235(t *testing.T) {
 }
 
 func TestEncodeMapKeyTypeInterface(t *testing.T) {
-	if _, err := json.Marshal(map[interface{}]interface{}{"a": 1}); err == nil {
+	if _, err := json.Marshal(map[any]any{"a": 1}); err == nil {
 		t.Fatal("expected error")
 	}
 }
@@ -2002,10 +2005,10 @@ func (t *marshalContextStructType) MarshalJSON(ctx context.Context) ([]byte, err
 	v := ctx.Value(marshalContextKey{})
 	s, ok := v.(string)
 	if !ok {
-		return nil, fmt.Errorf("failed to propagate parent context.Context")
+		return nil, errors.New("failed to propagate parent context.Context")
 	}
 	if s != "hello" {
-		return nil, fmt.Errorf("failed to propagate parent context.Context")
+		return nil, errors.New("failed to propagate parent context.Context")
 	}
 	return []byte(`"success"`), nil
 }
@@ -2046,7 +2049,7 @@ func TestInterfaceWithPointer(t *testing.T) {
 		array                = [4]int{1, 2, 3, 4}
 		mapvalue             = map[string]int{"a": 1}
 	)
-	data := map[string]interface{}{
+	data := map[string]any{
 		"ivalue":  ivalue,
 		"uvalue":  uvalue,
 		"svalue":  svalue,
@@ -2142,7 +2145,7 @@ type implementedIfaceType struct {
 func (implementedIfaceType) M() {}
 
 func TestImplementedMethodInterfaceType(t *testing.T) {
-	data := []implementedIfaceType{implementedIfaceType{}}
+	data := []implementedIfaceType{{}}
 	expected, err := stdjson.Marshal(data)
 	if err != nil {
 		t.Fatal(err)
@@ -2157,11 +2160,11 @@ func TestImplementedMethodInterfaceType(t *testing.T) {
 }
 
 func TestEmptyStructInterface(t *testing.T) {
-	expected, err := stdjson.Marshal([]interface{}{struct{}{}})
+	expected, err := stdjson.Marshal([]any{struct{}{}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := json.Marshal([]interface{}{struct{}{}})
+	got, err := json.Marshal([]any{struct{}{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2301,10 +2304,10 @@ func TestRecursivePtrHead(t *testing.T) {
 }
 
 func TestMarshalIndent(t *testing.T) {
-	v := map[string]map[string]interface{}{
+	v := map[string]map[string]any{
 		"a": {
 			"b": "1",
-			"c": map[string]interface{}{
+			"c": map[string]any{
 				"d": "1",
 			},
 		},
@@ -2408,7 +2411,7 @@ func TestIssue339(t *testing.T) {
 	type T2 struct {
 		T1 T1 `json:"T1"`
 	}
-	v := T2{T1{Int: big.NewInt(10000)}}
+	v := T2{T1: T1{Int: big.NewInt(10000)}}
 	b, err := json.Marshal(&v)
 	assertErr(t, err)
 	got := string(b)
@@ -2420,12 +2423,12 @@ func TestIssue339(t *testing.T) {
 
 func TestIssue376(t *testing.T) {
 	type Container struct {
-		V interface{} `json:"value"`
+		V any `json:"value"`
 	}
 	type MapOnly struct {
 		Map map[string]int64 `json:"map"`
 	}
-	b, err := json.Marshal(Container{MapOnly{}})
+	b, err := json.Marshal(Container{V: MapOnly{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2467,7 +2470,7 @@ func TestIssue370(t *testing.T) {
 
 func TestIssue374(t *testing.T) {
 	r := io.MultiReader(strings.NewReader(strings.Repeat(" ", 505)+`"\u`), strings.NewReader(`0000"`))
-	var v interface{}
+	var v any
 	if err := json.NewDecoder(r).Decode(&v); err != nil {
 		t.Fatal(err)
 	}
@@ -2642,7 +2645,7 @@ func TestIssue391(t *testing.T) {
 	}
 	for _, tc := range []struct {
 		name string
-		in   interface{}
+		in   any
 		out  string
 	}{
 		{in: struct{ B }{}, out: "{}"},

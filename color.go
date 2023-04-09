@@ -3,11 +3,12 @@ package json
 import (
 	"fmt"
 
-	"github.com/goccy/go-json/internal/encoder"
+	"github.com/3JoB/go-json/internal/encoder"
 )
 
 type (
 	ColorFormat = encoder.ColorFormat
+
 	ColorScheme = encoder.ColorScheme
 )
 

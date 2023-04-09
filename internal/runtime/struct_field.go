@@ -1,9 +1,10 @@
 package runtime
 
 import (
-	"reflect"
 	"strings"
 	"unicode"
+
+	"github.com/3JoB/go-reflect"
 )
 
 func getTag(field reflect.StructField) string {

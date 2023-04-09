@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 type coverMarshalJSON struct {
@@ -90,7 +90,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "FuncMarshalJSON",
@@ -1155,7 +1155,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 				}
 			}{A: struct {
 				A *coverMarshalJSON `json:"a"`
-			}{&coverMarshalJSON{}}},
+			}{A: &coverMarshalJSON{}}},
 		},
 		{
 			name: "HeadMarshalJSONPtrNotRootOmitEmpty",
@@ -1165,7 +1165,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 				}
 			}{A: struct {
 				A *coverMarshalJSON `json:"a,omitempty"`
-			}{&coverMarshalJSON{}}},
+			}{A: &coverMarshalJSON{}}},
 		},
 		{
 			name: "HeadMarshalJSONPtrNotRootString",
@@ -1175,7 +1175,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 				}
 			}{A: struct {
 				A *coverMarshalJSON `json:"a,string"`
-			}{&coverMarshalJSON{}}},
+			}{A: &coverMarshalJSON{}}},
 		},
 		{
 			name: "HeadPtrMarshalJSONPtrNotRoot",
@@ -1185,7 +1185,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 				}
 			}{A: struct {
 				A *coverPtrMarshalJSON `json:"a"`
-			}{&coverPtrMarshalJSON{}}},
+			}{A: &coverPtrMarshalJSON{}}},
 		},
 		{
 			name: "HeadPtrMarshalJSONPtrNotRootOmitEmpty",
@@ -1195,7 +1195,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 				}
 			}{A: struct {
 				A *coverPtrMarshalJSON `json:"a,omitempty"`
-			}{&coverPtrMarshalJSON{}}},
+			}{A: &coverPtrMarshalJSON{}}},
 		},
 		{
 			name: "HeadPtrMarshalJSONPtrNotRootString",
@@ -1205,7 +1205,7 @@ func TestCoverMarshalJSON(t *testing.T) {
 				}
 			}{A: struct {
 				A *coverPtrMarshalJSON `json:"a,string"`
-			}{&coverPtrMarshalJSON{}}},
+			}{A: &coverPtrMarshalJSON{}}},
 		},
 
 		// HeadMarshalJSONPtrNilNotRoot

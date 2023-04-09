@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/goccy/go-json/internal/encoder"
+	"github.com/3JoB/go-json/internal/encoder"
 )
 
 func DebugRun(ctx *encoder.RuntimeContext, b []byte, codeSet *encoder.OpcodeSet) ([]byte, error) {
@@ -26,10 +26,10 @@ func DebugRun(ctx *encoder.RuntimeContext, b []byte, codeSet *encoder.OpcodeSet)
 			fmt.Fprintln(w, "=============[DEBUG]===============")
 			fmt.Fprintln(w, "* [TYPE]")
 			fmt.Fprintln(w, codeSet.Type)
-			fmt.Fprintf(w, "\n")
+			fmt.Fprint(w, "\n")
 			fmt.Fprintln(w, "* [ALL OPCODE]")
 			fmt.Fprintln(w, code.Dump())
-			fmt.Fprintf(w, "\n")
+			fmt.Fprint(w, "\n")
 			fmt.Fprintln(w, "* [CONTEXT]")
 			fmt.Fprintf(w, "%+v\n", ctx)
 			fmt.Fprintln(w, "===================================")

@@ -1,8 +1,9 @@
 package runtime
 
 import (
-	"reflect"
 	"unsafe"
+
+	"github.com/3JoB/go-reflect"
 )
 
 type SliceHeader struct {

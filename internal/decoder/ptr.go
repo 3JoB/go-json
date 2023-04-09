@@ -1,10 +1,10 @@
 package decoder
 
 import (
-	"fmt"
+	"errors"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type ptrDecoder struct {
@@ -92,5 +92,5 @@ func (d *ptrDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.P
 }
 
 func (d *ptrDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: ptr decoder does not support decode path")
+	return nil, 0, errors.New("json: ptr decoder does not support decode path")
 }

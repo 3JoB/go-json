@@ -2,13 +2,14 @@ package encoder
 
 import (
 	"context"
-	"fmt"
-	"reflect"
+	"errors"
+
+	"github.com/3JoB/go-reflect"
 )
 
 var (
-	Marshal   func(interface{}) ([]byte, error)
-	Unmarshal func([]byte, interface{}) error
+	Marshal   func(any) ([]byte, error)
+	Unmarshal func([]byte, any) error
 )
 
 type FieldQuery struct {
@@ -47,7 +48,7 @@ func (q *FieldQuery) QueryString() (FieldQueryString, error) {
 type FieldQueryString string
 
 func (s FieldQueryString) Build() (*FieldQuery, error) {
-	var query interface{}
+	var query any
 	if err := Unmarshal([]byte(s), &query); err != nil {
 		return nil, err
 	}
@@ -65,14 +66,14 @@ func (s FieldQueryString) build(v reflect.Value) (*FieldQuery, error) {
 	case reflect.Interface:
 		return s.build(reflect.ValueOf(v.Interface()))
 	}
-	return nil, fmt.Errorf("failed to build field query")
+	return nil, errors.New("failed to build field query")
 }
 
 func (s FieldQueryString) buildString(v reflect.Value) (*FieldQuery, error) {
 	b := []byte(v.String())
 	switch b[0] {
 	case '[', '{':
-		var query interface{}
+		var query any
 		if err := Unmarshal(b, &query); err != nil {
 			return nil, err
 		}
@@ -99,11 +100,11 @@ func (s FieldQueryString) buildSlice(v reflect.Value) (*FieldQuery, error) {
 func (s FieldQueryString) buildMap(v reflect.Value) (*FieldQuery, error) {
 	keys := v.MapKeys()
 	if len(keys) != 1 {
-		return nil, fmt.Errorf("failed to build field query object")
+		return nil, errors.New("failed to build field query object")
 	}
 	key := keys[0]
 	if key.Type().Kind() != reflect.String {
-		return nil, fmt.Errorf("failed to build field query. invalid object key type")
+		return nil, errors.New("failed to build field query. invalid object key type")
 	}
 	name := key.String()
 	def, err := s.build(v.MapIndex(key))

@@ -3,14 +3,13 @@ package decoder
 import (
 	"bytes"
 	"encoding"
-	"fmt"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/errors"
-	"github.com/goccy/go-json/internal/runtime"
+	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/go-json/internal/runtime"
 )
 
 type unmarshalTextDecoder struct {
@@ -81,7 +80,7 @@ func (d *unmarshalTextDecoder) DecodeStream(s *Stream, depth int64, p unsafe.Poi
 	if b, ok := unquoteBytes(dst); ok {
 		dst = b
 	}
-	v := *(*interface{})(unsafe.Pointer(&emptyInterface{
+	v := *(*any)(unsafe.Pointer(&emptyInterface{
 		typ: d.typ,
 		ptr: p,
 	}))
@@ -132,7 +131,7 @@ func (d *unmarshalTextDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, 
 	if s, ok := unquoteBytes(src); ok {
 		src = s
 	}
-	v := *(*interface{})(unsafe.Pointer(&emptyInterface{
+	v := *(*any)(unsafe.Pointer(&emptyInterface{
 		typ: d.typ,
 		ptr: *(*unsafe.Pointer)(unsafe.Pointer(&p)),
 	}))
@@ -144,7 +143,7 @@ func (d *unmarshalTextDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, 
 }
 
 func (d *unmarshalTextDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {
-	return nil, 0, fmt.Errorf("json: unmarshal text decoder does not support decode path")
+	return nil, 0, errors.New("json: unmarshal text decoder does not support decode path")
 }
 
 func unquoteBytes(s []byte) (t []byte, ok bool) {
@@ -270,11 +269,11 @@ func getu4(s []byte) rune {
 	var r rune
 	for _, c := range s[2:6] {
 		switch {
-		case '0' <= c && c <= '9':
+		case c >= '0' && c <= '9':
 			c = c - '0'
-		case 'a' <= c && c <= 'f':
+		case c >= 'a' && c <= 'f':
 			c = c - 'a' + 10
-		case 'A' <= c && c <= 'F':
+		case c >= 'A' && c <= 'F':
 			c = c - 'A' + 10
 		default:
 			return -1

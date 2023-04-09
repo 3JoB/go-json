@@ -2,8 +2,9 @@ package encoder
 
 import (
 	"math/bits"
-	"reflect"
 	"unsafe"
+
+	"github.com/3JoB/go-reflect"
 )
 
 const (

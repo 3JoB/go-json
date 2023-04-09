@@ -6,11 +6,11 @@ import (
 	"os"
 	"unsafe"
 
-	"github.com/goccy/go-json/internal/encoder"
-	"github.com/goccy/go-json/internal/encoder/vm"
-	"github.com/goccy/go-json/internal/encoder/vm_color"
-	"github.com/goccy/go-json/internal/encoder/vm_color_indent"
-	"github.com/goccy/go-json/internal/encoder/vm_indent"
+	"github.com/3JoB/go-json/internal/encoder"
+	"github.com/3JoB/go-json/internal/encoder/vm"
+	"github.com/3JoB/go-json/internal/encoder/vm_color"
+	"github.com/3JoB/go-json/internal/encoder/vm_color_indent"
+	"github.com/3JoB/go-json/internal/encoder/vm_indent"
 )
 
 // An Encoder writes JSON values to an output stream.
@@ -30,12 +30,12 @@ func NewEncoder(w io.Writer) *Encoder {
 // Encode writes the JSON encoding of v to the stream, followed by a newline character.
 //
 // See the documentation for Marshal for details about the conversion of Go values to JSON.
-func (e *Encoder) Encode(v interface{}) error {
+func (e *Encoder) Encode(v any) error {
 	return e.EncodeWithOption(v)
 }
 
 // EncodeWithOption call Encode with EncodeOption.
-func (e *Encoder) EncodeWithOption(v interface{}, optFuncs ...EncodeOptionFunc) error {
+func (e *Encoder) EncodeWithOption(v any, optFuncs ...EncodeOptionFunc) error {
 	ctx := encoder.TakeRuntimeContext()
 	ctx.Option.Flag = 0
 
@@ -46,7 +46,7 @@ func (e *Encoder) EncodeWithOption(v interface{}, optFuncs ...EncodeOptionFunc) 
 }
 
 // EncodeContext call Encode with context.Context and EncodeOption.
-func (e *Encoder) EncodeContext(ctx context.Context, v interface{}, optFuncs ...EncodeOptionFunc) error {
+func (e *Encoder) EncodeContext(ctx context.Context, v any, optFuncs ...EncodeOptionFunc) error {
 	rctx := encoder.TakeRuntimeContext()
 	rctx.Option.Flag = 0
 	rctx.Option.Flag |= encoder.ContextOption
@@ -58,7 +58,7 @@ func (e *Encoder) EncodeContext(ctx context.Context, v interface{}, optFuncs ...
 	return err
 }
 
-func (e *Encoder) encodeWithOption(ctx *encoder.RuntimeContext, v interface{}, optFuncs ...EncodeOptionFunc) error {
+func (e *Encoder) encodeWithOption(ctx *encoder.RuntimeContext, v any, optFuncs ...EncodeOptionFunc) error {
 	if e.enabledHTMLEscape {
 		ctx.Option.Flag |= encoder.HTMLEscapeOption
 	}
@@ -111,7 +111,7 @@ func (e *Encoder) SetIndent(prefix, indent string) {
 	e.enabledIndent = true
 }
 
-func marshalContext(ctx context.Context, v interface{}, optFuncs ...EncodeOptionFunc) ([]byte, error) {
+func marshalContext(ctx context.Context, v any, optFuncs ...EncodeOptionFunc) ([]byte, error) {
 	rctx := encoder.TakeRuntimeContext()
 	rctx.Option.Flag = 0
 	rctx.Option.Flag = encoder.HTMLEscapeOption | encoder.NormalizeUTF8Option | encoder.ContextOption
@@ -138,7 +138,7 @@ func marshalContext(ctx context.Context, v interface{}, optFuncs ...EncodeOption
 	return copied, nil
 }
 
-func marshal(v interface{}, optFuncs ...EncodeOptionFunc) ([]byte, error) {
+func marshal(v any, optFuncs ...EncodeOptionFunc) ([]byte, error) {
 	ctx := encoder.TakeRuntimeContext()
 
 	ctx.Option.Flag = 0
@@ -165,7 +165,7 @@ func marshal(v interface{}, optFuncs ...EncodeOptionFunc) ([]byte, error) {
 	return copied, nil
 }
 
-func marshalNoEscape(v interface{}) ([]byte, error) {
+func marshalNoEscape(v any) ([]byte, error) {
 	ctx := encoder.TakeRuntimeContext()
 
 	ctx.Option.Flag = 0
@@ -189,7 +189,7 @@ func marshalNoEscape(v interface{}) ([]byte, error) {
 	return copied, nil
 }
 
-func marshalIndent(v interface{}, prefix, indent string, optFuncs ...EncodeOptionFunc) ([]byte, error) {
+func marshalIndent(v any, prefix, indent string, optFuncs ...EncodeOptionFunc) ([]byte, error) {
 	ctx := encoder.TakeRuntimeContext()
 
 	ctx.Option.Flag = 0
@@ -212,7 +212,7 @@ func marshalIndent(v interface{}, prefix, indent string, optFuncs ...EncodeOptio
 	return copied, nil
 }
 
-func encode(ctx *encoder.RuntimeContext, v interface{}) ([]byte, error) {
+func encode(ctx *encoder.RuntimeContext, v any) ([]byte, error) {
 	b := ctx.Buf[:0]
 	if v == nil {
 		b = encoder.AppendNull(ctx, b)
@@ -240,7 +240,7 @@ func encode(ctx *encoder.RuntimeContext, v interface{}) ([]byte, error) {
 	return buf, nil
 }
 
-func encodeNoEscape(ctx *encoder.RuntimeContext, v interface{}) ([]byte, error) {
+func encodeNoEscape(ctx *encoder.RuntimeContext, v any) ([]byte, error) {
 	b := ctx.Buf[:0]
 	if v == nil {
 		b = encoder.AppendNull(ctx, b)
@@ -267,7 +267,7 @@ func encodeNoEscape(ctx *encoder.RuntimeContext, v interface{}) ([]byte, error) 
 	return buf, nil
 }
 
-func encodeIndent(ctx *encoder.RuntimeContext, v interface{}, prefix, indent string) ([]byte, error) {
+func encodeIndent(ctx *encoder.RuntimeContext, v any, prefix, indent string) ([]byte, error) {
 	b := ctx.Buf[:0]
 	if v == nil {
 		b = encoder.AppendNull(ctx, b)

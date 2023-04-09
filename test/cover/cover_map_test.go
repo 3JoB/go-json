@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 type recursiveMap struct {
@@ -54,7 +54,7 @@ func TestCoverMap(t *testing.T) {
 
 	tests := []struct {
 		name string
-		data interface{}
+		data any
 	}{
 		{
 			name: "NestedMap",
@@ -581,7 +581,7 @@ func TestCoverMap(t *testing.T) {
 				}
 			}{A: struct {
 				A *map[string]int `json:"a"`
-			}{mapptr(map[string]int{"m": -1})}},
+			}{A: mapptr(map[string]int{"m": -1})}},
 		},
 		{
 			name: "HeadMapPtrNotRootOmitEmpty",
@@ -591,7 +591,7 @@ func TestCoverMap(t *testing.T) {
 				}
 			}{A: struct {
 				A *map[string]int `json:"a,omitempty"`
-			}{mapptr(map[string]int{"m": -1})}},
+			}{A: mapptr(map[string]int{"m": -1})}},
 		},
 		{
 			name: "HeadMapPtrNotRootString",
@@ -601,7 +601,7 @@ func TestCoverMap(t *testing.T) {
 				}
 			}{A: struct {
 				A *map[string]int `json:"a,string"`
-			}{mapptr(map[string]int{"m": -1})}},
+			}{A: mapptr(map[string]int{"m": -1})}},
 		},
 
 		// HeadMapPtrNilNotRoot

@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"github.com/3JoB/go-json"
 )
 
 func TestNumberIsValid(t *testing.T) {
@@ -86,8 +86,8 @@ func TestNumberIsValid(t *testing.T) {
 		"1..1",
 		"-1-2",
 		"012a42",
-		//"01.2",
-		//"012",
+		// "01.2",
+		// "012",
 		"12E12.12",
 		"1e2e3",
 		"1e+-2",
@@ -98,9 +98,9 @@ func TestNumberIsValid(t *testing.T) {
 		"1ea",
 		"1a",
 		"1.a",
-		//"1.",
-		//"01",
-		//"1.e1",
+		// "1.",
+		// "01",
+		// "1.e1",
 	}
 
 	for i, test := range invalidTests {
@@ -145,17 +145,17 @@ func isValidNumber(s string) bool {
 	case s[0] == '0':
 		s = s[1:]
 
-	case '1' <= s[0] && s[0] <= '9':
+	case s[0] >= '1' && s[0] <= '9':
 		s = s[1:]
-		for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
+		for len(s) > 0 && s[0] >= '0' && s[0] <= '9' {
 			s = s[1:]
 		}
 	}
 
 	// . followed by 1 or more digits.
-	if len(s) >= 2 && s[0] == '.' && '0' <= s[1] && s[1] <= '9' {
+	if len(s) >= 2 && s[0] == '.' && s[1] >= '0' && s[1] <= '9' {
 		s = s[2:]
-		for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
+		for len(s) > 0 && s[0] >= '0' && s[0] <= '9' {
 			s = s[1:]
 		}
 	}
@@ -170,7 +170,7 @@ func isValidNumber(s string) bool {
 				return false
 			}
 		}
-		for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
+		for len(s) > 0 && s[0] >= '0' && s[0] <= '9' {
 			s = s[1:]
 		}
 	}
