@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+
+	"github.com/3JoB/unsafeConvert"
 )
 
 type opType struct {
@@ -282,7 +284,7 @@ func generateVM() error {
 		return err
 	}
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "", string(file), parser.ParseComments)
+	f, err := parser.ParseFile(fset, "", unsafeConvert.StringReflect(file), parser.ParseComments)
 	if err != nil {
 		return err
 	}

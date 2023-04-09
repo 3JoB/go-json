@@ -232,6 +232,7 @@ func (d *Decoder) DecodeWithOption(v any, optFuncs ...DecodeOptionFunc) error {
 		optFunc(s.Option)
 	}
 	if err := dec.DecodeStream(s, 0, header.ptr); err != nil {
+		d.s.SkipErrorValue()
 		return err
 	}
 	s.Reset()

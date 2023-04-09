@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/3JoB/go-reflect"
+	"github.com/3JoB/unsafeConvert"
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
@@ -30,7 +31,7 @@ func newUintDecoder(typ *runtime.Type, structName, fieldName string, op func(uns
 
 func (d *uintDecoder) typeError(buf []byte, offset int64) *errors.UnmarshalTypeError {
 	return &errors.UnmarshalTypeError{
-		Value:  fmt.Sprintf("number %s", string(buf)),
+		Value:  fmt.Sprintf("number %s", unsafeConvert.StringReflect(buf)),
 		Type:   runtime.RType2Type(d.typ),
 		Offset: offset,
 	}

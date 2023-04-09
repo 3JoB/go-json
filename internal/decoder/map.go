@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/3JoB/go-reflect"
+	"github.com/3JoB/unsafeConvert"
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
@@ -237,7 +238,7 @@ func (d *mapDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]b
 			return nil, 0, errors.ErrExpected("colon after object key", cursor)
 		}
 		cursor++
-		child, found, err := ctx.Option.Path.Field(string(key))
+		child, found, err := ctx.Option.Path.Field(unsafeConvert.StringReflect(key))
 		if err != nil {
 			return nil, 0, err
 		}

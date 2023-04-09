@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/unsafeConvert"
 )
 
 var (
@@ -253,7 +254,7 @@ func compactTrue(dst, src []byte, cursor int64) ([]byte, int64, error) {
 	if cursor+3 >= int64(len(src)) {
 		return nil, 0, errors.ErrUnexpectedEndOfJSON("true", cursor)
 	}
-	if !bytes.Equal(src[cursor:cursor+4], []byte(`true`)) {
+	if !bytes.Equal(src[cursor:cursor+4], unsafeConvert.BytesReflect(`true`)) {
 		return nil, 0, errors.ErrInvalidCharacter(src[cursor], "true", cursor)
 	}
 	dst = append(dst, "true"...)
@@ -265,7 +266,7 @@ func compactFalse(dst, src []byte, cursor int64) ([]byte, int64, error) {
 	if cursor+4 >= int64(len(src)) {
 		return nil, 0, errors.ErrUnexpectedEndOfJSON("false", cursor)
 	}
-	if !bytes.Equal(src[cursor:cursor+5], []byte(`false`)) {
+	if !bytes.Equal(src[cursor:cursor+5], unsafeConvert.BytesReflect(`false`)) {
 		return nil, 0, errors.ErrInvalidCharacter(src[cursor], "false", cursor)
 	}
 	dst = append(dst, "false"...)
@@ -277,7 +278,7 @@ func compactNull(dst, src []byte, cursor int64) ([]byte, int64, error) {
 	if cursor+3 >= int64(len(src)) {
 		return nil, 0, errors.ErrUnexpectedEndOfJSON("null", cursor)
 	}
-	if !bytes.Equal(src[cursor:cursor+4], []byte(`null`)) {
+	if !bytes.Equal(src[cursor:cursor+4], unsafeConvert.BytesReflect(`null`)) {
 		return nil, 0, errors.ErrInvalidCharacter(src[cursor], "null", cursor)
 	}
 	dst = append(dst, "null"...)

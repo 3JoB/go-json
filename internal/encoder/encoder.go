@@ -13,6 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/3JoB/go-reflect"
+	"github.com/3JoB/unsafeConvert"
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
@@ -493,8 +494,8 @@ func AppendMarshalJSONIndent(ctx *RuntimeContext, code *Opcode, b []byte, v any)
 	indentedBuf, err := doIndent(
 		b,
 		marshalBuf,
-		string(ctx.Prefix)+strings.Repeat(string(ctx.IndentStr), int(ctx.BaseIndent+code.Indent)),
-		string(ctx.IndentStr),
+		unsafeConvert.StringReflect(ctx.Prefix)+strings.Repeat(unsafeConvert.StringReflect(ctx.IndentStr), int(ctx.BaseIndent+code.Indent)),
+		unsafeConvert.StringReflect(ctx.IndentStr),
 		(ctx.Option.Flag&HTMLEscapeOption) != 0,
 	)
 	if err != nil {

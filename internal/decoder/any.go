@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding"
 	"encoding/json"
+	"strings"
 	"unsafe"
 
 	"github.com/3JoB/go-reflect"
+	"github.com/3JoB/unsafeConvert"
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
@@ -19,6 +21,7 @@ type interfaceDecoder struct {
 	sliceDecoder  *sliceDecoder
 	mapDecoder    *mapDecoder
 	floatDecoder  *floatDecoder
+	intDecoder    *intDecoder
 	numberDecoder *numberDecoder
 	stringDecoder *stringDecoder
 }
@@ -29,6 +32,9 @@ func newEmptyInterfaceDecoder(structName, fieldName string) *interfaceDecoder {
 		structName: structName,
 		fieldName:  fieldName,
 		floatDecoder: newFloatDecoder(structName, fieldName, func(p unsafe.Pointer, v float64) {
+			*(*any)(p) = v
+		}),
+		intDecoder: newIntDecoder(nil, structName, fieldName, func(p unsafe.Pointer, v int64) {
 			*(*any)(p) = v
 		}),
 		numberDecoder: newNumberDecoder(structName, fieldName, func(p unsafe.Pointer, v json.Number) {
@@ -77,6 +83,9 @@ func newInterfaceDecoder(typ *runtime.Type, structName, fieldName string) *inter
 			fieldName,
 		),
 		floatDecoder: newFloatDecoder(structName, fieldName, func(p unsafe.Pointer, v float64) {
+			*(*any)(p) = v
+		}),
+		intDecoder: newIntDecoder(nil, structName, fieldName, func(p unsafe.Pointer, v int64) {
 			*(*any)(p) = v
 		}),
 		numberDecoder: newNumberDecoder(structName, fieldName, func(p unsafe.Pointer, v json.Number) {
@@ -232,27 +241,13 @@ func (d *interfaceDecoder) decodeStreamEmptyInterface(s *Stream, depth int64, p 
 		case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			return d.numDecoder(s).DecodeStream(s, depth, p)
 		case '"':
-			s.cursor++
-			start := s.cursor
-			for {
-				switch s.char() {
-				case '\\':
-					if _, err := decodeEscapeString(s, nil); err != nil {
-						return err
-					}
-				case '"':
-					literal := s.buf[start:s.cursor]
-					s.cursor++
-					*(*any)(p) = string(literal)
-					return nil
-				case nul:
-					if s.read() {
-						continue
-					}
-					return errors.ErrUnexpectedEndOfJSON("string", s.totalOffset())
-				}
-				s.cursor++
+			b, cursor, err := stringBytes(s)
+			s.cursor = cursor
+			if err != nil {
+				return err
 			}
+			*(*any)(p) = unsafeConvert.StringReflect(b)
+			return nil
 		case 't':
 			if err := trueBytes(s); err != nil {
 				return err
@@ -424,7 +419,13 @@ func (d *interfaceDecoder) decodeEmptyInterface(ctx *RuntimeContext, cursor, dep
 		**(**any)(unsafe.Pointer(&p)) = v
 		return cursor, nil
 	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		return d.floatDecoder.Decode(ctx, cursor, depth, p)
+		bytes, _, _ := d.numberDecoder.decodeByte(ctx.Buf, cursor)
+		numberStr := *(*string)(unsafe.Pointer(&bytes))
+		if strings.Contains(numberStr, ".") {
+			return d.floatDecoder.Decode(ctx, cursor, depth, p)
+		} else {
+			return d.intDecoder.Decode(ctx, cursor, depth, p)
+		}
 	case '"':
 		var v string
 		ptr := unsafe.Pointer(&v)
@@ -490,8 +491,8 @@ func NewPathDecoder() Decoder {
 }
 
 var (
-	truebytes  = []byte("true")
-	falsebytes = []byte("false")
+	truebytes  = unsafeConvert.BytesReflect("true")
+	falsebytes = unsafeConvert.BytesReflect("false")
 )
 
 func (d *interfaceDecoder) DecodePath(ctx *RuntimeContext, cursor, depth int64) ([][]byte, int64, error) {

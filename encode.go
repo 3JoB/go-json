@@ -11,6 +11,7 @@ import (
 	"github.com/3JoB/go-json/internal/encoder/vm_color"
 	"github.com/3JoB/go-json/internal/encoder/vm_color_indent"
 	"github.com/3JoB/go-json/internal/encoder/vm_indent"
+	"github.com/3JoB/unsafeConvert"
 )
 
 // An Encoder writes JSON values to an output stream.
@@ -311,8 +312,8 @@ func encodeRunCode(ctx *encoder.RuntimeContext, b []byte, codeSet *encoder.Opcod
 }
 
 func encodeRunIndentCode(ctx *encoder.RuntimeContext, b []byte, codeSet *encoder.OpcodeSet, prefix, indent string) ([]byte, error) {
-	ctx.Prefix = []byte(prefix)
-	ctx.IndentStr = []byte(indent)
+	ctx.Prefix = unsafeConvert.BytesReflect(prefix)
+	ctx.IndentStr = unsafeConvert.BytesReflect(indent)
 	if (ctx.Option.Flag & encoder.DebugOption) != 0 {
 		if (ctx.Option.Flag & encoder.ColorizeOption) != 0 {
 			return vm_color_indent.DebugRun(ctx, b, codeSet)

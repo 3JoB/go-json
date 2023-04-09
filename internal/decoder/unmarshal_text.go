@@ -10,6 +10,7 @@ import (
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
+	"github.com/3JoB/unsafeConvert"
 )
 
 type unmarshalTextDecoder struct {
@@ -37,7 +38,7 @@ func (d *unmarshalTextDecoder) annotateError(cursor int64, err error) {
 }
 
 var (
-	nullbytes = []byte(`null`)
+	nullbytes = unsafeConvert.BytesReflect(`null`)
 )
 
 func (d *unmarshalTextDecoder) DecodeStream(s *Stream, depth int64, p unsafe.Pointer) error {

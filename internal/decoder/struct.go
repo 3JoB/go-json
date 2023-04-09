@@ -11,6 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/unsafeConvert"
 )
 
 type structFieldSet struct {
@@ -52,11 +53,11 @@ func init() {
 }
 
 func toASCIILower(s string) string {
-	b := []byte(s)
+	b := unsafeConvert.BytesReflect(s)
 	for i := range b {
 		b[i] = largeToSmallTable[b[i]]
 	}
-	return string(b)
+	return unsafeConvert.StringReflect(b)
 }
 
 func newStructDecoder(structName, fieldName string, fieldMap map[string]*structFieldSet) *structDecoder {
@@ -182,15 +183,15 @@ func decodeKeyCharByUnicodeRune(buf []byte, cursor int64) ([]byte, int64, error)
 	if utf16.IsSurrogate(r) {
 		cursor += defaultOffset
 		if cursor+surrogateOffset >= int64(len(buf)) || buf[cursor] != '\\' || buf[cursor+1] != 'u' {
-			return []byte(string(unicode.ReplacementChar)), cursor + defaultOffset - 1, nil
+			return unsafeConvert.BytesReflect(string(unicode.ReplacementChar)), cursor + defaultOffset - 1, nil
 		}
 		cursor += 2
 		r2 := unicodeToRune(buf[cursor : cursor+defaultOffset])
 		if r := utf16.DecodeRune(r, r2); r != unicode.ReplacementChar {
-			return []byte(string(r)), cursor + defaultOffset - 1, nil
+			return unsafeConvert.BytesReflect(string(r)), cursor + defaultOffset - 1, nil
 		}
 	}
-	return []byte(string(r)), cursor + defaultOffset - 1, nil
+	return unsafeConvert.BytesReflect(string(r)), cursor + defaultOffset - 1, nil
 }
 
 func decodeKeyCharByEscapedChar(buf []byte, cursor int64) ([]byte, int64, error) {
@@ -576,16 +577,16 @@ func decodeKeyCharByUnicodeRuneStream(s *Stream) ([]byte, error) {
 		}
 		if s.cursor+surrogateOffset >= s.length || s.buf[s.cursor] != '\\' || s.buf[s.cursor+1] != 'u' {
 			s.cursor += defaultOffset - 1
-			return []byte(string(unicode.ReplacementChar)), nil
+			return unsafeConvert.BytesReflect(string(unicode.ReplacementChar)), nil
 		}
 		r2 := unicodeToRune(s.buf[s.cursor+defaultOffset+2 : s.cursor+surrogateOffset])
 		if r := utf16.DecodeRune(r, r2); r != unicode.ReplacementChar {
 			s.cursor += defaultOffset - 1
-			return []byte(string(r)), nil
+			return unsafeConvert.BytesReflect(string(r)), nil
 		}
 	}
 	s.cursor += defaultOffset - 1
-	return []byte(string(r)), nil
+	return unsafeConvert.BytesReflect(string(r)), nil
 }
 
 func decodeKeyCharByEscapeCharStream(s *Stream) ([]byte, error) {

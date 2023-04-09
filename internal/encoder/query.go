@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/3JoB/go-reflect"
+	"github.com/3JoB/unsafeConvert"
 )
 
 var (
@@ -23,7 +24,7 @@ func (q *FieldQuery) Hash() string {
 		return q.hash
 	}
 	b, _ := Marshal(q)
-	q.hash = string(b)
+	q.hash = unsafeConvert.StringReflect(b)
 	return q.hash
 }
 
@@ -70,7 +71,7 @@ func (s FieldQueryString) build(v reflect.Value) (*FieldQuery, error) {
 }
 
 func (s FieldQueryString) buildString(v reflect.Value) (*FieldQuery, error) {
-	b := []byte(v.String())
+	b := unsafeConvert.BytesReflect(v.String())
 	switch b[0] {
 	case '[', '{':
 		var query any
@@ -82,7 +83,7 @@ func (s FieldQueryString) buildString(v reflect.Value) (*FieldQuery, error) {
 		}
 		return s.build(reflect.ValueOf(query))
 	}
-	return &FieldQuery{Name: string(b)}, nil
+	return &FieldQuery{Name: unsafeConvert.StringReflect(b)}, nil
 }
 
 func (s FieldQueryString) buildSlice(v reflect.Value) (*FieldQuery, error) {

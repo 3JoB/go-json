@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/3JoB/go-json/internal/errors"
+	"github.com/3JoB/unsafeConvert"
 )
 
 const (
@@ -15,10 +16,10 @@ const (
 )
 
 type Stream struct {
+	r                     io.Reader
 	buf                   []byte
 	bufSize               int64
 	length                int64
-	r                     io.Reader
 	offset                int64
 	cursor                int64
 	filledBuffer          bool
@@ -103,7 +104,6 @@ func (s *Stream) statForRetry() ([]byte, int64, unsafe.Pointer) {
 
 func (s *Stream) Reset() {
 	s.reset()
-	s.bufSize = int64(len(s.buf))
 }
 
 func (s *Stream) More() bool {
@@ -148,11 +148,12 @@ func (s *Stream) Token() (any, error) {
 			}
 			return f64, nil
 		case '"':
-			bytes, err := stringBytes(s)
+			bytes, cursor, err := stringBytes(s)
+			s.cursor = cursor
 			if err != nil {
 				return nil, err
 			}
-			return string(bytes), nil
+			return unsafeConvert.StringReflect(bytes), nil
 		case 't':
 			if err := trueBytes(s); err != nil {
 				return nil, err
@@ -195,16 +196,7 @@ func (s *Stream) readBuf() []byte {
 		s.buf = make([]byte, s.bufSize)
 		copy(s.buf, remainBuf)
 	}
-	remainLen := s.length - s.cursor
-	remainNotNulCharNum := int64(0)
-	for i := int64(0); i < remainLen; i++ {
-		if s.buf[s.cursor+i] == nul {
-			break
-		}
-		remainNotNulCharNum++
-	}
-	s.length = s.cursor + remainNotNulCharNum
-	return s.buf[s.cursor+remainNotNulCharNum:]
+	return s.buf[s.length:]
 }
 
 func (s *Stream) read() bool {
@@ -213,8 +205,8 @@ func (s *Stream) read() bool {
 	}
 	buf := s.readBuf()
 	last := len(buf) - 1
-	buf[last] = nul
 	n, err := s.r.Read(buf[:last])
+	buf[n] = nul
 	s.length += int64(n)
 	if n == last {
 		s.filledBuffer = true
@@ -227,6 +219,27 @@ func (s *Stream) read() bool {
 		return false
 	}
 	return true
+}
+
+// form: https://github.com/goccy/go-json/pull/446
+func (s *Stream) requires(cursor, n int64) (read int) {
+RETRY:
+	if s.length-cursor < n {
+		if !s.read() {
+			return -1
+		}
+		read++
+		goto RETRY
+	}
+	return
+}
+
+// form: https://github.com/goccy/go-json/pull/446
+func (s *Stream) syncBufptr(r int, p *unsafe.Pointer) int {
+	if r > 0 {
+		*p = s.bufptr()
+	}
+	return r
 }
 
 func (s *Stream) skipWhiteSpace() byte {
@@ -372,6 +385,10 @@ func (s *Stream) skipArray(depth int64) error {
 	}
 }
 
+func (s *Stream) SkipErrorValue() {
+	_ = s.skipValue(0)
+}
+
 func (s *Stream) skipValue(depth int64) error {
 	_, cursor, p := s.stat()
 	for {
@@ -457,100 +474,71 @@ func (s *Stream) skipValue(depth int64) error {
 }
 
 func nullBytes(s *Stream) error {
+	if s.requires(s.cursor, 4) < 0 {
+		s.cursor = s.length
+		return errors.ErrUnexpectedEndOfJSON("null", s.cursor)
+	}
 	// current cursor's character is 'n'
 	s.cursor++
 	if s.char() != 'u' {
-		if err := retryReadNull(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "null", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 'l' {
-		if err := retryReadNull(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "null", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 'l' {
-		if err := retryReadNull(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "null", s.totalOffset())
 	}
 	s.cursor++
 	return nil
-}
-
-func retryReadNull(s *Stream) error {
-	if s.char() == nul && s.read() {
-		return nil
-	}
-	return errors.ErrInvalidCharacter(s.char(), "null", s.totalOffset())
 }
 
 func trueBytes(s *Stream) error {
+	if s.requires(s.cursor, 4) < 0 {
+		s.cursor = s.length
+		return errors.ErrUnexpectedEndOfJSON("bool(true)", s.cursor)
+	}
 	// current cursor's character is 't'
 	s.cursor++
 	if s.char() != 'r' {
-		if err := retryReadTrue(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(true)", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 'u' {
-		if err := retryReadTrue(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(true)", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 'e' {
-		if err := retryReadTrue(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(true)", s.totalOffset())
 	}
 	s.cursor++
 	return nil
-}
-
-func retryReadTrue(s *Stream) error {
-	if s.char() == nul && s.read() {
-		return nil
-	}
-	return errors.ErrInvalidCharacter(s.char(), "bool(true)", s.totalOffset())
 }
 
 func falseBytes(s *Stream) error {
+	if s.requires(s.cursor, 5) < 0 {
+		s.cursor = s.length
+		return errors.ErrUnexpectedEndOfJSON("bool(false)", s.cursor)
+	}
 	// current cursor's character is 'f'
 	s.cursor++
 	if s.char() != 'a' {
-		if err := retryReadFalse(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(false)", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 'l' {
-		if err := retryReadFalse(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(false)", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 's' {
-		if err := retryReadFalse(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(false)", s.totalOffset())
 	}
 	s.cursor++
 	if s.char() != 'e' {
-		if err := retryReadFalse(s); err != nil {
-			return err
-		}
+		return errors.ErrInvalidCharacter(s.char(), "bool(false)", s.totalOffset())
 	}
 	s.cursor++
 	return nil
-}
-
-func retryReadFalse(s *Stream) error {
-	if s.char() == nul && s.read() {
-		return nil
-	}
-	return errors.ErrInvalidCharacter(s.char(), "bool(false)", s.totalOffset())
 }
