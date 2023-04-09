@@ -12,7 +12,7 @@ import (
 
 var (
 	sliceType = runtime.Type2RType(
-		reflect.TypeOf((*sliceHeader)(nil)).Elem(),
+		reflect.ToRT(reflect.TypeOf((*sliceHeader)(nil)).Elem()),
 	)
 	nilSlice = unsafe.Pointer(&sliceHeader{})
 )
@@ -93,7 +93,7 @@ func typedmemmove(t *runtime.Type, dst, src unsafe.Pointer)
 func (d *sliceDecoder) errNumber(offset int64) *errors.UnmarshalTypeError {
 	return &errors.UnmarshalTypeError{
 		Value:  "number",
-		Type:   reflect.SliceOf(runtime.RType2Type(d.elemType)),
+		Type:   reflect.SliceOf(reflect.ToT(runtime.RType2Type(d.elemType))),
 		Struct: d.structName,
 		Field:  d.fieldName,
 		Offset: offset,

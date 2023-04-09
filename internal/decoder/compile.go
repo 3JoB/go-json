@@ -62,7 +62,7 @@ func compileHead(typ *runtime.Type, structTypeToDecoder map[uintptr]Decoder) (De
 	switch {
 	case implementsUnmarshalJSONType(runtime.PtrTo(typ)):
 		return newUnmarshalJSONDecoder(runtime.PtrTo(typ), "", ""), nil
-	case runtime.PtrTo(typ).Implements(unmarshalTextType):
+	case runtime.PtrTo(typ).Implements(reflect.ToRT(unmarshalTextType)):
 		return newUnmarshalTextDecoder(runtime.PtrTo(typ), "", ""), nil
 	}
 	return compile(typ.Elem(), "", "", structTypeToDecoder)
@@ -72,7 +72,7 @@ func compile(typ *runtime.Type, structName, fieldName string, structTypeToDecode
 	switch {
 	case implementsUnmarshalJSONType(runtime.PtrTo(typ)):
 		return newUnmarshalJSONDecoder(runtime.PtrTo(typ), structName, fieldName), nil
-	case runtime.PtrTo(typ).Implements(unmarshalTextType):
+	case runtime.PtrTo(typ).Implements(reflect.ToRT(unmarshalTextType)):
 		return newUnmarshalTextDecoder(runtime.PtrTo(typ), structName, fieldName), nil
 	}
 
@@ -133,7 +133,7 @@ func isStringTagSupportedType(typ *runtime.Type) bool {
 	switch {
 	case implementsUnmarshalJSONType(runtime.PtrTo(typ)):
 		return false
-	case runtime.PtrTo(typ).Implements(unmarshalTextType):
+	case runtime.PtrTo(typ).Implements(reflect.ToRT(unmarshalTextType)):
 		return false
 	}
 	switch typ.Kind() {
@@ -152,7 +152,7 @@ func isStringTagSupportedType(typ *runtime.Type) bool {
 }
 
 func compileMapKey(typ *runtime.Type, structName, fieldName string, structTypeToDecoder map[uintptr]Decoder) (Decoder, error) {
-	if runtime.PtrTo(typ).Implements(unmarshalTextType) {
+	if runtime.PtrTo(typ).Implements(reflect.ToRT(unmarshalTextType)) {
 		return newUnmarshalTextDecoder(runtime.PtrTo(typ), structName, fieldName), nil
 	}
 	if typ.Kind() == reflect.String {
@@ -257,7 +257,7 @@ func compileFloat64(structName, fieldName string) (Decoder, error) {
 }
 
 func compileString(typ *runtime.Type, structName, fieldName string) (Decoder, error) {
-	if typ == runtime.Type2RType(jsonNumberType) {
+	if typ == runtime.Type2RType(reflect.ToRT(jsonNumberType)) {
 		return newNumberDecoder(structName, fieldName, func(p unsafe.Pointer, v json.Number) {
 			*(*json.Number)(p) = v
 		}), nil
@@ -484,5 +484,5 @@ func filterFieldSets(sets []*structFieldSet) []*structFieldSet {
 }
 
 func implementsUnmarshalJSONType(typ *runtime.Type) bool {
-	return typ.Implements(unmarshalJSONType) || typ.Implements(unmarshalJSONContextType)
+	return typ.Implements(reflect.ToRT(unmarshalJSONType)) || typ.Implements(reflect.ToRT(unmarshalJSONContextType))
 }

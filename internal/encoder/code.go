@@ -166,7 +166,7 @@ func (c *StringCode) Kind() CodeKind {
 }
 
 func (c *StringCode) ToOpcode(ctx *compileContext) Opcodes {
-	isJSONNumberType := c.typ == runtime.Type2RType(jsonNumberType)
+	isJSONNumberType := c.typ == runtime.Type2RType(reflect.ToRT(jsonNumberType))
 	var code *Opcode
 	if c.isPtr {
 		if isJSONNumberType {

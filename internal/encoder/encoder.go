@@ -219,7 +219,7 @@ func ErrUnsupportedFloat(v float64) *errors.UnsupportedValueError {
 
 func ErrMarshalerWithCode(code *Opcode, err error) *errors.MarshalerError {
 	return &errors.MarshalerError{
-		Type: runtime.RType2Type(code.Type),
+		Type: reflect.ToT(runtime.RType2Type(code.Type)),
 		Err:  err,
 	}
 }

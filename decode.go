@@ -169,7 +169,7 @@ func noescape(p unsafe.Pointer) unsafe.Pointer {
 
 func validateType(typ *runtime.Type, p uintptr) error {
 	if typ == nil || typ.Kind() != reflect.Ptr || p == 0 {
-		return &InvalidUnmarshalError{Type: runtime.RType2Type(typ)}
+		return &InvalidUnmarshalError{Type: reflect.ToT(runtime.RType2Type(typ))}
 	}
 	return nil
 }

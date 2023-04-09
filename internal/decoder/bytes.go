@@ -6,6 +6,7 @@ import (
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
 )
 
 type bytesDecoder struct {
@@ -19,9 +20,9 @@ type bytesDecoder struct {
 func byteUnmarshalerSliceDecoder(typ *runtime.Type, structName string, fieldName string) Decoder {
 	var unmarshalDecoder Decoder
 	switch {
-	case runtime.PtrTo(typ).Implements(unmarshalJSONType):
+	case runtime.PtrTo(typ).Implements(reflect.ToRT(unmarshalJSONType)):
 		unmarshalDecoder = newUnmarshalJSONDecoder(runtime.PtrTo(typ), structName, fieldName)
-	case runtime.PtrTo(typ).Implements(unmarshalTextType):
+	case runtime.PtrTo(typ).Implements(reflect.ToRT(unmarshalTextType)):
 		unmarshalDecoder = newUnmarshalTextDecoder(runtime.PtrTo(typ), structName, fieldName)
 	default:
 		unmarshalDecoder, _ = compileUint8(typ, structName, fieldName)
@@ -87,7 +88,7 @@ func (d *bytesDecoder) decodeStreamBinary(s *Stream, depth int64, p unsafe.Point
 	if c == '[' {
 		if d.sliceDecoder == nil {
 			return nil, &errors.UnmarshalTypeError{
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: s.totalOffset(),
 			}
 		}
@@ -103,7 +104,7 @@ func (d *bytesDecoder) decodeBinary(ctx *RuntimeContext, cursor, depth int64, p 
 	if buf[cursor] == '[' {
 		if d.sliceDecoder == nil {
 			return nil, 0, &errors.UnmarshalTypeError{
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: cursor,
 			}
 		}

@@ -103,13 +103,13 @@ func (d *interfaceDecoder) numDecoder(s *Stream) Decoder {
 }
 
 var (
-	emptyInterfaceType = runtime.Type2RType(reflect.TypeOf((*any)(nil)).Elem())
+	emptyInterfaceType = runtime.Type2RType(reflect.ToRT(reflect.TypeOf((*any)(nil)).Elem()))
 	EmptyInterfaceType = emptyInterfaceType
 	interfaceMapType   = runtime.Type2RType(
-		reflect.TypeOf((*map[string]any)(nil)).Elem(),
+		reflect.ToRT(reflect.TypeOf((*map[string]any)(nil)).Elem()),
 	)
 	stringType = runtime.Type2RType(
-		reflect.TypeOf(""),
+		reflect.ToRT(reflect.TypeOf("")),
 	)
 )
 

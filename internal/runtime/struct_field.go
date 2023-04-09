@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/3JoB/go-reflect"
+	"reflect"
 )
 
 func getTag(field reflect.StructField) string {

@@ -3,7 +3,7 @@ package runtime
 import (
 	"unsafe"
 
-	"github.com/3JoB/go-reflect"
+	"reflect"
 )
 
 // Type representing reflect.rtype for noescape trick

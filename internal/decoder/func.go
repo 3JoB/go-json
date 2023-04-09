@@ -6,6 +6,7 @@ import (
 
 	"github.com/3JoB/go-json/internal/errors"
 	"github.com/3JoB/go-json/internal/runtime"
+	"github.com/3JoB/go-reflect"
 )
 
 type funcDecoder struct {
@@ -31,25 +32,25 @@ func (d *funcDecoder) DecodeStream(s *Stream, depth int64, p unsafe.Pointer) err
 		case '"':
 			return &errors.UnmarshalTypeError{
 				Value:  "string",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: s.totalOffset(),
 			}
 		case '[':
 			return &errors.UnmarshalTypeError{
 				Value:  "array",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: s.totalOffset(),
 			}
 		case '{':
 			return &errors.UnmarshalTypeError{
 				Value:  "object",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: s.totalOffset(),
 			}
 		case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			return &errors.UnmarshalTypeError{
 				Value:  "number",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: s.totalOffset(),
 			}
 		case 'n':
@@ -62,7 +63,7 @@ func (d *funcDecoder) DecodeStream(s *Stream, depth int64, p unsafe.Pointer) err
 			if err := trueBytes(s); err == nil {
 				return &errors.UnmarshalTypeError{
 					Value:  "boolean",
-					Type:   runtime.RType2Type(d.typ),
+					Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 					Offset: s.totalOffset(),
 				}
 			}
@@ -70,7 +71,7 @@ func (d *funcDecoder) DecodeStream(s *Stream, depth int64, p unsafe.Pointer) err
 			if err := falseBytes(s); err == nil {
 				return &errors.UnmarshalTypeError{
 					Value:  "boolean",
-					Type:   runtime.RType2Type(d.typ),
+					Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 					Offset: s.totalOffset(),
 				}
 			}
@@ -93,25 +94,25 @@ func (d *funcDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.
 		case '"':
 			return 0, &errors.UnmarshalTypeError{
 				Value:  "string",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: start,
 			}
 		case '[':
 			return 0, &errors.UnmarshalTypeError{
 				Value:  "array",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: start,
 			}
 		case '{':
 			return 0, &errors.UnmarshalTypeError{
 				Value:  "object",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: start,
 			}
 		case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			return 0, &errors.UnmarshalTypeError{
 				Value:  "number",
-				Type:   runtime.RType2Type(d.typ),
+				Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 				Offset: start,
 			}
 		case 'n':
@@ -123,7 +124,7 @@ func (d *funcDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.
 			if err := validateTrue(buf, start); err == nil {
 				return 0, &errors.UnmarshalTypeError{
 					Value:  "boolean",
-					Type:   runtime.RType2Type(d.typ),
+					Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 					Offset: start,
 				}
 			}
@@ -131,7 +132,7 @@ func (d *funcDecoder) Decode(ctx *RuntimeContext, cursor, depth int64, p unsafe.
 			if err := validateFalse(buf, start); err == nil {
 				return 0, &errors.UnmarshalTypeError{
 					Value:  "boolean",
-					Type:   runtime.RType2Type(d.typ),
+					Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 					Offset: start,
 				}
 			}

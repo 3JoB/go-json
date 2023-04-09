@@ -163,7 +163,7 @@ func (c *Compiler) typeToCode(typ *runtime.Type) (Code, error) {
 		elem := typ.Elem()
 		if elem.Kind() == reflect.Uint8 {
 			p := runtime.PtrTo(elem)
-			if !c.implementsMarshalJSONType(p) && !p.Implements(marshalTextType) {
+			if !c.implementsMarshalJSONType(p) && !p.Implements(reflect.ToRT(marshalTextType)) {
 				return c.bytesCode(typ, isPtr)
 			}
 		}
@@ -206,7 +206,7 @@ func (c *Compiler) typeToCode(typ *runtime.Type) (Code, error) {
 	case reflect.Interface:
 		return c.interfaceCode(typ, isPtr)
 	default:
-		if isPtr && typ.Implements(marshalTextType) {
+		if isPtr && typ.Implements(reflect.ToRT(marshalTextType)) {
 			typ = orgType
 		}
 		return c.typeToCodeWithPtr(typ, isPtr)
@@ -227,7 +227,7 @@ func (c *Compiler) typeToCodeWithPtr(typ *runtime.Type, isPtr bool) (Code, error
 		elem := typ.Elem()
 		if elem.Kind() == reflect.Uint8 {
 			p := runtime.PtrTo(elem)
-			if !c.implementsMarshalJSONType(p) && !p.Implements(marshalTextType) {
+			if !c.implementsMarshalJSONType(p) && !p.Implements(reflect.ToRT(marshalTextType)) {
 				return c.bytesCode(typ, false)
 			}
 		}
@@ -271,7 +271,7 @@ func (c *Compiler) typeToCodeWithPtr(typ *runtime.Type, isPtr bool) (Code, error
 	case reflect.Bool:
 		return c.boolCode(typ, false)
 	}
-	return nil, &errors.UnsupportedTypeError{Type: runtime.RType2Type(typ)}
+	return nil, &errors.UnsupportedTypeError{Type: reflect.ToT(runtime.RType2Type(typ))}
 }
 
 const intSize = 32 << (^uint(0) >> 63)
@@ -412,7 +412,7 @@ func (c *Compiler) marshalJSONCode(typ *runtime.Type) (*MarshalJSONCode, error) 
 		typ:                typ,
 		isAddrForMarshaler: c.isPtrMarshalJSONType(typ),
 		isNilableType:      c.isNilableType(typ),
-		isMarshalerContext: typ.Implements(marshalJSONContextType) || runtime.PtrTo(typ).Implements(marshalJSONContextType),
+		isMarshalerContext: typ.Implements(reflect.ToRT(marshalJSONContextType)) || runtime.PtrTo(typ).Implements(reflect.ToRT(marshalJSONContextType)),
 	}, nil
 }
 
@@ -483,7 +483,7 @@ func (c *Compiler) listElemCode(typ *runtime.Type) (Code, error) {
 	switch {
 	case c.isPtrMarshalJSONType(typ):
 		return c.marshalJSONCode(typ)
-	case !typ.Implements(marshalTextType) && runtime.PtrTo(typ).Implements(marshalTextType):
+	case !typ.Implements(reflect.ToRT(marshalTextType)) && runtime.PtrTo(typ).Implements(reflect.ToRT(marshalTextType)):
 		return c.marshalTextCode(typ)
 	case typ.Kind() == reflect.Map:
 		return c.ptrCode(runtime.PtrTo(typ))
@@ -538,7 +538,7 @@ func (c *Compiler) mapKeyCode(typ *runtime.Type) (Code, error) {
 	case reflect.Uintptr:
 		return c.uintStringCode(typ)
 	}
-	return nil, &errors.UnsupportedTypeError{Type: runtime.RType2Type(typ)}
+	return nil, &errors.UnsupportedTypeError{Type: reflect.ToT(runtime.RType2Type(typ))}
 }
 
 func (c *Compiler) mapValueCode(typ *runtime.Type) (Code, error) {
@@ -847,14 +847,14 @@ func (c *Compiler) implementsMarshalJSON(typ *runtime.Type) bool {
 }
 
 func (c *Compiler) implementsMarshalText(typ *runtime.Type) bool {
-	if !typ.Implements(marshalTextType) {
+	if !typ.Implements(reflect.ToRT(marshalTextType)) {
 		return false
 	}
 	if typ.Kind() != reflect.Ptr {
 		return true
 	}
 	// type kind is reflect.Ptr
-	if !typ.Elem().Implements(marshalTextType) {
+	if !typ.Elem().Implements(reflect.ToRT(marshalTextType)) {
 		return true
 	}
 	// needs to dereference
@@ -878,7 +878,7 @@ func (c *Compiler) isNilableType(typ *runtime.Type) bool {
 }
 
 func (c *Compiler) implementsMarshalJSONType(typ *runtime.Type) bool {
-	return typ.Implements(marshalJSONType) || typ.Implements(marshalJSONContextType)
+	return typ.Implements(reflect.ToRT(marshalJSONType)) || typ.Implements(reflect.ToRT(marshalJSONContextType))
 }
 
 func (c *Compiler) isPtrMarshalJSONType(typ *runtime.Type) bool {
@@ -886,7 +886,7 @@ func (c *Compiler) isPtrMarshalJSONType(typ *runtime.Type) bool {
 }
 
 func (c *Compiler) isPtrMarshalTextType(typ *runtime.Type) bool {
-	return !typ.Implements(marshalTextType) && runtime.PtrTo(typ).Implements(marshalTextType)
+	return !typ.Implements(reflect.ToRT(marshalTextType)) && runtime.PtrTo(typ).Implements(reflect.ToRT(marshalTextType))
 }
 
 func (c *Compiler) codeToOpcode(ctx *compileContext, typ *runtime.Type, code Code) *Opcode {

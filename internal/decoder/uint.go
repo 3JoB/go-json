@@ -32,7 +32,7 @@ func newUintDecoder(typ *runtime.Type, structName, fieldName string, op func(uns
 func (d *uintDecoder) typeError(buf []byte, offset int64) *errors.UnmarshalTypeError {
 	return &errors.UnmarshalTypeError{
 		Value:  fmt.Sprintf("number %s", unsafeConvert.StringReflect(buf)),
-		Type:   runtime.RType2Type(d.typ),
+		Type:   reflect.ToT(runtime.RType2Type(d.typ)),
 		Offset: offset,
 	}
 }
