@@ -53,7 +53,7 @@ func init() {
 }
 
 func toASCIILower(s string) string {
-	b := unsafeConvert.BytesReflect(s)
+	b := []byte(s)
 	for i := range b {
 		b[i] = largeToSmallTable[b[i]]
 	}
